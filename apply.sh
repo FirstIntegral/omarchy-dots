@@ -8,16 +8,18 @@ ROOT=$(cd "$(dirname "$0")" && pwd)
 DRY_RUN=0
 SKIP_VIGIL=0
 SKIP_THEME=0
+SKIP_PKG=0
 VIGIL_URL="git@github.com:FirstIntegral/vigil.git"
 BACKUP_ROOT=""
 
 usage() {
   cat <<'EOF'
-Usage: ./apply.sh [--dry-run] [--skip-vigil] [--skip-theme]
+Usage: ./apply.sh [--dry-run] [--skip-vigil] [--skip-theme] [--no-pkg]
 
   --dry-run      print the plan; write nothing
   --skip-vigil   do not clone/add Vigil
   --skip-theme   do not run omarchy theme/font set
+  --no-pkg       do not install OS packages (unattended runs — AUR/pacman needs sudo)
 EOF
 }
 
@@ -30,6 +32,7 @@ while (($#)); do
     --dry-run) DRY_RUN=1; shift ;;
     --skip-vigil) SKIP_VIGIL=1; shift ;;
     --skip-theme) SKIP_THEME=1; shift ;;
+    --no-pkg) SKIP_PKG=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) die "unknown argument: $1" ;;
   esac
@@ -137,7 +140,11 @@ plan() {
     log "  omarchy theme set \"Osaka Jade\""
     log "  omarchy font set \"JetBrainsMono Nerd Font\""
   fi
-  log "  omarchy pkg add opentabletdriver  (if otd-daemon missing)"
+  if (( SKIP_PKG )); then
+    log "  opentabletdriver: skipped (--no-pkg)"
+  else
+    log "  omarchy pkg aur add opentabletdriver  (if otd-daemon missing; AUR, may prompt for sudo)"
+  fi
   log "  systemctl --user enable --now opentabletdriver.service"
   log "  hyprctl reload + configerrors (if Hyprland is running)"
   log "  omarchy restart shell"
@@ -203,9 +210,11 @@ fi
 
 if command -v otd-daemon >/dev/null; then
   log "OpenTabletDriver already installed"
+elif (( SKIP_PKG )); then
+  warn "opentabletdriver not installed and --no-pkg given — run once by hand: omarchy pkg aur add opentabletdriver"
 else
-  log "Installing opentabletdriver"
-  omarchy pkg add opentabletdriver || warn "opentabletdriver package install failed — install it, then re-run ./apply.sh"
+  log "Installing opentabletdriver (AUR — may prompt for sudo)"
+  omarchy pkg aur add opentabletdriver || warn "opentabletdriver package install failed — install it, then re-run ./apply.sh"
 fi
 if command -v systemctl >/dev/null; then
   systemctl --user enable --now opentabletdriver.service \
