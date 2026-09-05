@@ -51,11 +51,25 @@ cd ~/projects/omarchy-dots
 5. `omarchy plugin add git@github.com:FirstIntegral/vigil.git --enable --yes` if Vigil is not already present.
 6. Copy `shell.json` **after** plugins exist so the bar layout wins.
 7. `omarchy theme set "Osaka Jade"` and `omarchy font set "JetBrainsMono Nerd Font"`.
-8. `omarchy pkg add opentabletdriver` if `otd-daemon` is missing, copy `opentabletdriver/settings.json` → `~/.config/OpenTabletDriver/settings.json`, then `systemctl --user enable --now opentabletdriver.service`.
+8. `omarchy pkg aur add opentabletdriver` (AUR — may prompt for sudo) if `otd-daemon` is missing, copy `opentabletdriver/settings.json` → `~/.config/OpenTabletDriver/settings.json`, then `systemctl --user enable --now opentabletdriver.service`.
 9. `hyprctl reload` (if Hyprland is running) then `hyprctl configerrors`.
 10. `omarchy restart shell`.
 
 If Vigil clone fails (no GitHub SSH), the rest still lands. Fix SSH, install Vigil, re-run `./apply.sh`.
+
+### Boot sync (this repo is the source of truth)
+
+`sync.sh` runs at every login from the 1config boot dashboard (also safe to run by hand):
+
+```bash
+bash ~/projects/omarchy-dots/sync.sh
+```
+
+It fetches `origin/main` (validated remote, BatchMode, ff-only), pulls if behind, then drift-checks every pack file against the live `~/.config` target. Drift → runs `./apply.sh --no-pkg` automatically. Local repo edits are never touched — apply only reads the repo and writes `~/.config`.
+
+`--no-pkg` because OS packages need sudo: if `opentabletdriver` is missing, sync reports it and continues; install once by hand with `omarchy pkg aur add opentabletdriver`.
+
+Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead (nothing applied) · `3` dirty repo (nothing pulled) · `4` divergence/apply failed · `5` files in sync but opentabletdriver package missing.
 
 ### After apply
 
