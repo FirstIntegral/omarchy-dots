@@ -2,7 +2,7 @@
 # sync.sh — keep this machine's Omarchy config in line with github:FirstIntegral/omarchy-dots.
 #
 # Runs at login from the 1config boot dashboard; safe to run anytime:
-#   bash ~/projects/omarchy-dots/sync.sh
+#   bash ~/Projects/omarchy-dots/sync.sh
 #
 # Flow:
 #   1. fetch origin/main (validated remote only)

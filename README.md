@@ -35,8 +35,8 @@ Companion that is **not** this pack: agents brain is `git@github.com:FirstIntegr
 ### Apply
 
 ```bash
-gh repo clone FirstIntegral/omarchy-dots ~/projects/omarchy-dots
-cd ~/projects/omarchy-dots
+gh repo clone FirstIntegral/omarchy-dots ~/Projects/omarchy-dots
+cd ~/Projects/omarchy-dots
 
 ./apply.sh --dry-run
 ./apply.sh
@@ -62,7 +62,7 @@ If Vigil clone fails (no GitHub SSH), the rest still lands. Fix SSH, install Vig
 `sync.sh` runs at every login from the 1config boot dashboard (also safe to run by hand):
 
 ```bash
-bash ~/projects/omarchy-dots/sync.sh
+bash ~/Projects/omarchy-dots/sync.sh
 ```
 
 It fetches `origin/main` (validated remote, BatchMode, ff-only), pulls if behind, then drift-checks every pack file against the live `~/.config` target. Drift → runs `./apply.sh --no-pkg` automatically. Local repo edits are never touched — apply only reads the repo and writes `~/.config`.
