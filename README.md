@@ -1,6 +1,6 @@
 # omarchy-dots
 
-Private pack of **portable** Omarchy desktop config. Another machine clones this repo and applies it.
+Public pack of **portable** Omarchy desktop config. Another machine clones this repo and applies it.
 
 This file is the apply playbook. An AI on the destination machine should read **this README** and run `./apply.sh`. Do not invent a different copy. Do not rsync `$HOME`.
 
@@ -27,7 +27,7 @@ Writing `~/.config/omarchy/plugins/brwsk.tray`, adding Vigil, installing OpenTab
 ### Prerequisites
 
 1. This machine is Omarchy. Prefer **4.0.2-1** `stable` (see `source.json`). Run `omarchy update` first if behind. Cross-major (3.x onto 4.x or the reverse) is unsupported — stop and say so.
-2. `gh` authenticated as a user who can clone `FirstIntegral/omarchy-dots` **and** `FirstIntegral/vigil` (both private), with SSH to GitHub (`ssh -T git@github.com`).
+2. For the owner: `gh` authenticated as a user who can clone `FirstIntegral/omarchy-dots` **and** `FirstIntegral/vigil`, with SSH to GitHub (`ssh -T git@github.com`). Both repos are public, so anyone else can clone read-only over HTTPS.
 3. Network. `apply.sh` may prompt for privilege to install `opentabletdriver` (polkit/sudo). Wait for the human; do not bypass.
 
 Companion that is **not** this pack: agents brain is `git@github.com:FirstIntegral/1config.git` → clone to `~/.agents` → `bash ~/.agents/setup.sh`. Do that only if the human wants agents on this box too.
@@ -108,6 +108,6 @@ When portable config changes on the source box, copy the changed files into this
 
 ## Repo
 
-- Remote: `git@github.com:FirstIntegral/omarchy-dots.git` (private)
-- Companion plugin: `git@github.com:FirstIntegral/vigil.git` (private, installed by `apply.sh`)
+- Remote: `git@github.com:FirstIntegral/omarchy-dots.git` (public; HTTPS `https://github.com/FirstIntegral/omarchy-dots.git` works read-only)
+- Companion plugin: `git@github.com:FirstIntegral/vigil.git` (public, installed by `apply.sh`)
 - Brain / agents: `git@github.com:FirstIntegral/1config.git` → `~/.agents` + `bash ~/.agents/setup.sh`
