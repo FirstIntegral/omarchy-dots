@@ -55,6 +55,7 @@ for req in \
   "$ROOT/plugins/brwsk.tray/Tray.qml" \
   "$ROOT/plugins/brwsk.tray/TrayModel.js" \
   "$ROOT/opentabletdriver/settings.json" \
+  "$ROOT/local-bin/omarchy-screensaver" \
   "$ROOT/source.json"
 do
   [[ -f $req ]] || die "pack incomplete: missing $req"
@@ -88,6 +89,7 @@ OMARCHY_DIR="$HOME_CONFIG/omarchy"
 PLUGIN_DIR="$OMARCHY_DIR/plugins/brwsk.tray"
 
 OTD_DIR="$HOME_CONFIG/OpenTabletDriver"
+LOCAL_BIN_DIR="$HOME/.local/bin"
 
 copy_files=(
   "hypr/bindings.lua:${HYPR_DIR}/bindings.lua"
@@ -98,6 +100,7 @@ copy_files=(
   "plugins/brwsk.tray/Tray.qml:${PLUGIN_DIR}/Tray.qml"
   "plugins/brwsk.tray/TrayModel.js:${PLUGIN_DIR}/TrayModel.js"
   "opentabletdriver/settings.json:${OTD_DIR}/settings.json"
+  "local-bin/omarchy-screensaver:${LOCAL_BIN_DIR}/omarchy-screensaver"
 )
 # shell.json is copied last, after Vigil exists
 
@@ -173,6 +176,8 @@ for pair in "${copy_files[@]}"; do
   from=${pair%%:*}
   to=${pair#*:}
   rel=${to#"$HOME_CONFIG/"}
+  # targets outside ~/.config (e.g. ~/.local/bin) — strip $HOME/ instead
+  [[ $rel != /* ]] || rel=${to#"$HOME/"}
   backup_if_exists "$to" "$rel"
   install_file "$ROOT/$from" "$to"
   log "installed $to"

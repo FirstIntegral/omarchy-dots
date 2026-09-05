@@ -89,10 +89,11 @@ Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead
 | `omarchy/defaults/agent` | `~/.config/omarchy/defaults/agent` (`grok`) |
 | `plugins/brwsk.tray/` | `~/.config/omarchy/plugins/brwsk.tray/` |
 | `opentabletdriver/settings.json` | `~/.config/OpenTabletDriver/settings.json` |
+| `local-bin/omarchy-screensaver` | `~/.local/bin/omarchy-screensaver` (matrix-only screensaver override; shadows the packaged `ttfx --random-effect` copy via PATH) |
 
 Also: Vigil clone, Osaka Jade, JetBrainsMono Nerd Font, `opentabletdriver` package + user service.
 
-Bindings this pack owns: `SUPER+L` lock, `SUPER+F` file manager, `SUPER+S` screenshot. Bar: tray + Vigil on the right, clock format `dddd HH:mm`, idle lock effectively off (`31536000` seconds). `hyprland.lua` prepends `~/.local/bin` to `PATH`.
+Bindings this pack owns: `SUPER+L` lock, `SUPER+F` file manager, `SUPER+S` screenshot. Bar: tray + Vigil on the right, clock format `dddd HH:mm`, idle lock effectively off (`31536000` seconds), screensaver after 10 min idle (`600` seconds). `hyprland.lua` prepends `~/.local/bin` to `PATH`.
 
 ## What stays out
 
