@@ -44,8 +44,9 @@ input = {
   },
  })
 
--- Machine-specific hl.device ignores (e.g. Huion G930L on the source desktop)
--- stay off this pack. Add them on the machine that has that hardware.
+-- OpenTabletDriver owns the G930L. Ignore the kernel HID clone (wrong size).
+hl.device({ name = "huion-huion-tablet_g930l-pen", enabled = false })
+hl.device({ name = "huion-huion-tablet_g930l", enabled = false })
 
 -- App-specific touchpad scroll speeds.
 -- o.window("(Alacritty|kitty|foot)", { scroll_touchpad = 1.5 })

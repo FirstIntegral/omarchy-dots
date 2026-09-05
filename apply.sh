@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Apply this Omarchy config pack to the current user on this machine.
-# See AGENTS.md. Never writes /usr/share/omarchy or hypr/monitors.lua.
+# Playbook: README.md. Never writes /usr/share/omarchy or hypr/monitors.lua.
 
 set -euo pipefail
 
@@ -39,7 +39,7 @@ done
 command -v omarchy >/dev/null || die "omarchy not on PATH; this pack is for an Omarchy machine"
 command -v python3 >/dev/null || die "python3 is required"
 
-[[ -d /usr/share/omarchy ]] || die " /usr/share/omarchy missing; not an Omarchy install"
+[[ -d /usr/share/omarchy ]] || die "/usr/share/omarchy missing; not an Omarchy install"
 [[ -e $ROOT/hypr/monitors.lua ]] && die "pack contains hypr/monitors.lua — remove it; monitors are machine-specific"
 
 for req in \
@@ -51,14 +51,14 @@ for req in \
   "$ROOT/plugins/brwsk.tray/manifest.json" \
   "$ROOT/plugins/brwsk.tray/Tray.qml" \
   "$ROOT/plugins/brwsk.tray/TrayModel.js" \
+  "$ROOT/opentabletdriver/settings.json" \
   "$ROOT/source.json"
 do
   [[ -f $req ]] || die "pack incomplete: missing $req"
 done
 
-if grep -Eq 'hl\.device\(\{ name = "huion' "$ROOT/hypr/input.lua"; then
-  die "pack input.lua still has Huion hl.device blocks — strip them before applying"
-fi
+grep -Eq 'hl\.device\(\{ name = "huion-huion-tablet_g930l' "$ROOT/hypr/input.lua" \
+  || die "pack input.lua is missing the Huion G930L hl.device ignores"
 
 python3 - "$ROOT/omarchy/shell.json" <<'PY' || die "omarchy/shell.json is not valid JSON"
 import json, sys
@@ -84,6 +84,8 @@ HYPR_DIR="$HOME_CONFIG/hypr"
 OMARCHY_DIR="$HOME_CONFIG/omarchy"
 PLUGIN_DIR="$OMARCHY_DIR/plugins/brwsk.tray"
 
+OTD_DIR="$HOME_CONFIG/OpenTabletDriver"
+
 copy_files=(
   "hypr/bindings.lua:${HYPR_DIR}/bindings.lua"
   "hypr/hyprland.lua:${HYPR_DIR}/hyprland.lua"
@@ -92,6 +94,7 @@ copy_files=(
   "plugins/brwsk.tray/manifest.json:${PLUGIN_DIR}/manifest.json"
   "plugins/brwsk.tray/Tray.qml:${PLUGIN_DIR}/Tray.qml"
   "plugins/brwsk.tray/TrayModel.js:${PLUGIN_DIR}/TrayModel.js"
+  "opentabletdriver/settings.json:${OTD_DIR}/settings.json"
 )
 # shell.json is copied last, after Vigil exists
 
@@ -134,6 +137,8 @@ plan() {
     log "  omarchy theme set \"Osaka Jade\""
     log "  omarchy font set \"JetBrainsMono Nerd Font\""
   fi
+  log "  omarchy pkg add opentabletdriver  (if otd-daemon missing)"
+  log "  systemctl --user enable --now opentabletdriver.service"
   log "  hyprctl reload + configerrors (if Hyprland is running)"
   log "  omarchy restart shell"
 }
@@ -149,7 +154,7 @@ BACKUP_ROOT="$HOME_CONFIG/omarchy-dots-backup.$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$BACKUP_ROOT"
 log "Backup: $BACKUP_ROOT"
 
-mkdir -p "$HYPR_DIR" "$OMARCHY_DIR/defaults" "$PLUGIN_DIR"
+mkdir -p "$HYPR_DIR" "$OMARCHY_DIR/defaults" "$PLUGIN_DIR" "$OTD_DIR"
 
 # Never overwrite monitors.lua — backup it only as a snapshot of current, then leave it.
 if [[ -e $HYPR_DIR/monitors.lua || -L $HYPR_DIR/monitors.lua ]]; then
@@ -196,6 +201,19 @@ if (( ! SKIP_THEME )); then
   omarchy font set "JetBrainsMono Nerd Font" || warn "font set failed"
 fi
 
+if command -v otd-daemon >/dev/null; then
+  log "OpenTabletDriver already installed"
+else
+  log "Installing opentabletdriver"
+  omarchy pkg add opentabletdriver || warn "opentabletdriver package install failed — install it, then re-run ./apply.sh"
+fi
+if command -v systemctl >/dev/null; then
+  systemctl --user enable --now opentabletdriver.service \
+    || warn "could not enable opentabletdriver.service"
+else
+  warn "systemctl missing; start OpenTabletDriver yourself"
+fi
+
 if [[ -n ${HYPRLAND_INSTANCE_SIGNATURE:-} ]] && command -v hyprctl >/dev/null; then
   hyprctl reload || warn "hyprctl reload failed"
   errors=$(hyprctl configerrors 2>/dev/null || true)
@@ -217,7 +235,7 @@ log ""
 log "DONE. Next:"
 log "  1. Set monitors on THIS machine (Super+Space → Setup → Monitors). Do not copy another box's monitors.lua."
 log "  2. Fingerprint reader?  omarchy setup security fingerprint"
-log "  3. Huion G930L on THIS machine? add the two hl.device ignores to ~/.config/hypr/input.lua"
+log "  3. Plug in the Huion G930L. If the mapped area is wrong, open OpenTabletDriver and remap display."
 log "  4. Agents brain is separate: clone FirstIntegral/1config to ~/.agents && bash ~/.agents/setup.sh"
 if (( ! vigil_present )); then
   log "  5. Vigil is NOT installed. Fix GitHub SSH and re-run ./apply.sh"

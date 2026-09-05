@@ -6,5 +6,7 @@
   "font": "JetBrainsMono Nerd Font",
   "default_agent": "grok",
   "vigil_repo": "git@github.com:FirstIntegral/vigil.git",
-  "pack_repo": "git@github.com:FirstIntegral/omarchy-dots.git"
+  "pack_repo": "git@github.com:FirstIntegral/omarchy-dots.git",
+  "huion": "G930L",
+  "opentabletdriver": "0.6.7-2"
 }
