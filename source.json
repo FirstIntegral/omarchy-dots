@@ -1,0 +1,10 @@
+{
+  "exported": "2026-09-05",
+  "omarchy_version": "4.0.2-1",
+  "channel": "stable",
+  "theme": "Osaka Jade",
+  "font": "JetBrainsMono Nerd Font",
+  "default_agent": "grok",
+  "vigil_repo": "git@github.com:FirstIntegral/vigil.git",
+  "pack_repo": "git@github.com:FirstIntegral/omarchy-dots.git"
+}

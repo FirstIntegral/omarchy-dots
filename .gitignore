@@ -1,0 +1,13 @@
+# Local AI session files — never commit unless the user says otherwise
+session_compact.md
+session_transcript.md
+claude_memory_import.md
+
+# Legacy session paths
+docs/SESSION.md
+docs/session-archive/
+docs/session-flushes/
+
+# Local apply residue
+*.bak
+*.bak.*
