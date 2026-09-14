@@ -4,7 +4,7 @@ Public pack of **portable** Omarchy desktop config. Another machine clones this 
 
 This file is the apply playbook. An AI on the destination machine should read **this README** and run `./apply.sh`. Do not invent a different copy. Do not rsync `$HOME`.
 
-Not a full home mirror. `monitors.lua`, Chromium, and stock Omarchy files stay out.
+Not a full home mirror. `monitors.lua`, Chromium profiles, and stock Omarchy files stay out.
 
 ## For the applying AI
 
@@ -85,6 +85,7 @@ Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead
 | `hypr/bindings.lua` | `~/.config/hypr/bindings.lua` |
 | `hypr/hyprland.lua` | `~/.config/hypr/hyprland.lua` |
 | `hypr/input.lua` | `~/.config/hypr/input.lua` (pointer sensitivity + Huion G930L `hl.device` ignores) |
+| `chromium/chromium-flags.conf` | `~/.config/chromium-flags.conf` (pins `--password-store=basic`) |
 | `omarchy/shell.json` | `~/.config/omarchy/shell.json` |
 | `omarchy/defaults/agent` | `~/.config/omarchy/defaults/agent` (`grok`) |
 | `plugins/brwsk.tray/` | `~/.config/omarchy/plugins/brwsk.tray/` |
@@ -93,12 +94,12 @@ Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead
 
 Also: Vigil clone, Osaka Jade, JetBrainsMono Nerd Font, `opentabletdriver` package + user service.
 
-Bindings this pack owns: `SUPER+L` lock, `SUPER+F` file manager, `SUPER+S` screenshot. Bar: tray + Vigil on the right, clock format `dddd HH:mm`, idle lock effectively off (`31536000` seconds), screensaver after 10 min idle (`600` seconds). `hyprland.lua` prepends `~/.local/bin` to `PATH`.
+Bindings this pack owns: `SUPER+L` lock, `SUPER+F` file manager, `SUPER+S` screenshot. Bar: tray + Vigil on the right, clock format `dddd HH:mm`, idle lock effectively off (`31536000` seconds), screensaver after 10 min idle (`600` seconds). `hyprland.lua` prepends `~/.local/bin` to `PATH`. Chromium pins `--password-store=basic` because a corrupted gnome-keyring (this box gets `invalid or unrecognized format` after some updates) makes Chromium mint a fresh storage key and silently log out of every site; `basic` keeps the key independent of the keyring, at the cost of obfuscation-only at-rest protection (LUKS covers the disk).
 
 ## What stays out
 
 - `hypr/monitors.lua` — per machine
-- Chromium / browser profiles, tokens, fcitx
+- Chromium profiles, tokens, fcitx (the one Chromium file in the pack is `chromium-flags.conf`)
 - Stock Omarchy files (looknfeel, autostart, branding, menu jsonc, invitation hooks)
 - OpenTabletDriver `Logs/`
 - Agents brain (`FirstIntegral/1config`)

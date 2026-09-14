@@ -49,6 +49,7 @@ for req in \
   "$ROOT/hypr/bindings.lua" \
   "$ROOT/hypr/hyprland.lua" \
   "$ROOT/hypr/input.lua" \
+  "$ROOT/chromium/chromium-flags.conf" \
   "$ROOT/omarchy/shell.json" \
   "$ROOT/omarchy/defaults/agent" \
   "$ROOT/plugins/brwsk.tray/manifest.json" \
@@ -95,6 +96,7 @@ copy_files=(
   "hypr/bindings.lua:${HYPR_DIR}/bindings.lua"
   "hypr/hyprland.lua:${HYPR_DIR}/hyprland.lua"
   "hypr/input.lua:${HYPR_DIR}/input.lua"
+  "chromium/chromium-flags.conf:${HOME_CONFIG}/chromium-flags.conf"
   "omarchy/defaults/agent:${OMARCHY_DIR}/defaults/agent"
   "plugins/brwsk.tray/manifest.json:${PLUGIN_DIR}/manifest.json"
   "plugins/brwsk.tray/Tray.qml:${PLUGIN_DIR}/Tray.qml"

@@ -87,6 +87,7 @@ pairs=(
   "hypr/bindings.lua:$HOME_CONFIG/hypr/bindings.lua"
   "hypr/hyprland.lua:$HOME_CONFIG/hypr/hyprland.lua"
   "hypr/input.lua:$HOME_CONFIG/hypr/input.lua"
+  "chromium/chromium-flags.conf:$HOME_CONFIG/chromium-flags.conf"
   "omarchy/defaults/agent:$HOME_CONFIG/omarchy/defaults/agent"
   "omarchy/shell.json:$HOME_CONFIG/omarchy/shell.json"
   "plugins/brwsk.tray/manifest.json:$HOME_CONFIG/omarchy/plugins/brwsk.tray/manifest.json"

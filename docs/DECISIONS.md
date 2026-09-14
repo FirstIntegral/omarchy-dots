@@ -30,3 +30,10 @@
 ## 2026-09-05 README.md is the apply playbook
 - GitHub shows README on the repo home. Destination AIs read that file, not a chat transcript.
 - `AGENTS.md` points at README and restates the hard rules for tools that auto-load AGENTS first.
+
+## 2026-09-14 Chromium pins `--password-store=basic`
+- Symptom: after some Omarchy updates the browser is logged out of every site without being touched.
+- Evidence: at boot after the 2026-09-12/14 updates, `gnome-keyring-daemon` logged `keyring was in an invalid or unrecognized format` for both `Default_keyring.keyring` and `Default_Keyring.keyring`; Secret Service came up empty, Chromium minted a fresh "Chromium Safe Storage" key, and every cookie/password encrypted under the old key became undecryptable.
+- Omarchy migration 1784508556 pins `gnome-libsecret` to stop libsecret↔basic flapping, but that assumes a healthy keyring — this machine's keyring corrupts.
+- Ship `chromium/chromium-flags.conf` (whole file, since Chromium has no per-flag drop-in) with `--password-store=basic`. The basic key is hardcoded, so it survives any keyring state. Cost: at-rest protection is obfuscation only; LUKS covers disk theft and an unlocked keyring was already readable by any process as this user.
+- Rejected: repairing the default keyring (root cause of the corruption not established; recurrence risk). Rejected: re-encrypting the profile from the libsecret key to the basic key (fragile OSCrypt internals, risk of profile damage). Rejected: leaving `gnome-libsecret` (recurring logouts).
