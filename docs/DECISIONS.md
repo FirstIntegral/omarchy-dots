@@ -22,6 +22,11 @@
 - Do not vendor Vigil into this pack. `apply.sh` clones `git@github.com:FirstIntegral/vigil.git` via `omarchy plugin add`.
 - `brwsk.tray` has no git remote; it is vendored here because `shell.json` hardcodes that plugin id (a clone of `omarchy.tray` with the overflow drawer removed).
 
+## 2026-09-19 Bar id is brwsk.vigil; boot sync must not restore xyz
+- Plugin id renamed 2026-09-17. Pack `omarchy/shell.json` still said `xyz.brwsk.vigil`. Login `sync.sh` saw drift after any live fix and re-applied the old id. Eye vanished on every reboot. Overlay still ran (plugin dir is `brwsk.vigil`).
+- Pack bar id is now `brwsk.vigil`. Presence checks and clone URL follow `FirstIntegral/Vigil.git`.
+- Rejected: fixing only `~/.config/omarchy/shell.json` (next login overwrites it). Rejected: stopping boot sync.
+
 ## 2026-09-05 apply.sh is the only mutation path
 - Another AI on the destination machine runs `./apply.sh`, it does not invent a copy of `~/.config`.
 - Apply backs up overwritten files under `~/.config/omarchy-dots-backup.<timestamp>/`.

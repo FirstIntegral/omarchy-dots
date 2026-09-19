@@ -9,7 +9,7 @@ DRY_RUN=0
 SKIP_VIGIL=0
 SKIP_THEME=0
 SKIP_PKG=0
-VIGIL_URL="git@github.com:FirstIntegral/vigil.git"
+VIGIL_URL="git@github.com:FirstIntegral/Vigil.git"
 BACKUP_ROOT=""
 
 usage() {
@@ -186,9 +186,9 @@ for pair in "${copy_files[@]}"; do
 done
 
 vigil_present=0
-if [[ -f $OMARCHY_DIR/plugins/xyz.brwsk.vigil/manifest.json ]]; then
+if [[ -f $OMARCHY_DIR/plugins/brwsk.vigil/manifest.json ]]; then
   vigil_present=1
-  log "Vigil already installed at ~/.config/omarchy/plugins/xyz.brwsk.vigil"
+  log "Vigil already installed at ~/.config/omarchy/plugins/brwsk.vigil"
 fi
 
 if (( SKIP_VIGIL )); then
@@ -200,7 +200,7 @@ else
   if omarchy plugin add "$VIGIL_URL" --enable --yes; then
     vigil_present=1
   else
-    warn "Vigil install failed. Bar will miss xyz.brwsk.vigil until you fix GitHub SSH and re-run ./apply.sh"
+    warn "Vigil install failed. Bar will miss brwsk.vigil until you fix GitHub SSH and re-run ./apply.sh"
     warn "  ssh -T git@github.com"
     warn "  omarchy plugin add $VIGIL_URL --enable --yes"
   fi

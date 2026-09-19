@@ -115,7 +115,7 @@ if [ -n "$theme_want" ] && [ -n "$theme_cur" ] && [ "$theme_cur" != "$theme_want
 fi
 
 # vigil drift
-if [ ! -f "$HOME_CONFIG/omarchy/plugins/xyz.brwsk.vigil/manifest.json" ]; then
+if [ ! -f "$HOME_CONFIG/omarchy/plugins/brwsk.vigil/manifest.json" ]; then
   drift+=("vigil plugin (missing)")
 fi
 

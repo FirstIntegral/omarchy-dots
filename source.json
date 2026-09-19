@@ -5,7 +5,7 @@
   "theme": "Osaka Jade",
   "font": "JetBrainsMono Nerd Font",
   "default_agent": "grok",
-  "vigil_repo": "git@github.com:FirstIntegral/vigil.git",
+  "vigil_repo": "git@github.com:FirstIntegral/Vigil.git",
   "pack_repo": "git@github.com:FirstIntegral/omarchy-dots.git",
   "huion": "G930L",
   "opentabletdriver": "0.6.7-2"

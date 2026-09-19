@@ -48,7 +48,7 @@ cd ~/Projects/omarchy-dots
 2. Warn on Omarchy version mismatch vs `source.json`. Same major 4.x continues; other majors abort.
 3. Copy overwritten files to `~/.config/omarchy-dots-backup.<timestamp>/`.
 4. Install the files in the table below. Never touches `monitors.lua` on disk.
-5. `omarchy plugin add git@github.com:FirstIntegral/vigil.git --enable --yes` if Vigil is not already present.
+5. `omarchy plugin add git@github.com:FirstIntegral/Vigil.git --enable --yes` if Vigil is not already present.
 6. Copy `shell.json` **after** plugins exist so the bar layout wins.
 7. `omarchy theme set "Osaka Jade"` and `omarchy font set "JetBrainsMono Nerd Font"`.
 8. `omarchy pkg aur add opentabletdriver` (AUR — may prompt for sudo) if `otd-daemon` is missing, copy `opentabletdriver/settings.json` → `~/.config/OpenTabletDriver/settings.json`, then `systemctl --user enable --now opentabletdriver.service`.
@@ -111,5 +111,5 @@ When portable config changes on the source box, copy the changed files into this
 ## Repo
 
 - Remote: `git@github.com:FirstIntegral/omarchy-dots.git` (public; HTTPS `https://github.com/FirstIntegral/omarchy-dots.git` works read-only)
-- Companion plugin: `git@github.com:FirstIntegral/vigil.git` (public, installed by `apply.sh`)
+- Companion plugin: `git@github.com:FirstIntegral/Vigil.git` (public, installed by `apply.sh`)
 - Brain / agents: `git@github.com:FirstIntegral/1config.git` → `~/.agents` + `bash ~/.agents/setup.sh`
