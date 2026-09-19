@@ -44,7 +44,7 @@ input = {
   },
  })
 
--- OpenTabletDriver owns the G930L. Ignore the kernel HID clone (wrong size).
+-- A tablet driver owns the G930L. Ignore the kernel HID clone (wrong size).
 hl.device({ name = "huion-huion-tablet_g930l-pen", enabled = false })
 hl.device({ name = "huion-huion-tablet_g930l", enabled = false })
 

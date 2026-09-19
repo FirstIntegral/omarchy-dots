@@ -17,6 +17,7 @@ This is not a software project to extend. There is no `session_compact.md`. Do n
 - Do **not** write `/usr/share/omarchy/`.
 - Do **not** rsync all of `~/.config` or `$HOME`.
 - Do **not** run `omarchy refresh` / `omarchy reinstall configs`.
-- Huion G930L ignores + OpenTabletDriver **are** in the pack. Apply them.
-- Vigil is a separate public repo; `apply.sh` clones it. That plugin add is the requested apply.
+- Do **not** write `~/.config/omarchy/shell.json` or `~/.config/omarchy/plugins/`.
+- Do **not** `omarchy plugin add` / `enable` / `remove`.
+- Do **not** write `~/.config/OpenTabletDriver/` or install OpenTabletDriver. Tablet is `~/Projects/agentic-OpenTabletDriver`.
 - Do **not** force-push `main`. Do **not** `curl | sh`.

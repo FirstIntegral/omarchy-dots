@@ -36,6 +36,12 @@
 - GitHub shows README on the repo home. Destination AIs read that file, not a chat transcript.
 - `AGENTS.md` points at README and restates the hard rules for tools that auto-load AGENTS first.
 
+## 2026-09-19 Pack is appearance + shortcuts, not plugins or tablet
+- Login `sync.sh` was a second product installer: Vigil clone, hardcoded `shell.json` bar ids (`xyz.brwsk.vigil` then `brwsk.vigil`), vendored `brwsk.tray`, AUR OpenTabletDriver + `settings.json` overwrite. That clobbered a live Vigil bar id on every boot and would fight `~/Projects/agentic-OpenTabletDriver` (fork daemon, `~/.config/OpenTabletDriver`, user unit drop-in).
+- Pack now copies hypr bindings / hyprland / input, Chromium flags, default agent, screensaver wrapper, and sets Osaka Jade + JetBrainsMono. No `shell.json`. No plugins. No OpenTabletDriver. No `omarchy plugin add`. No `omarchy restart shell`.
+- `source.json` dropped `vigil_repo`, `opentabletdriver`, `huion`. Hypr still ignores the G930L kernel HID so a tablet driver can own the pen; that is compositor config, not OTD settings.
+- Rejected: keeping Vigil in the pack with the renamed id (still a hardcoded plugin). Rejected: shipping OTD 0.6.7-2 from AUR next to the fork. Rejected: turning off boot sync (hypr/theme still want it).
+
 ## 2026-09-14 Chromium pins `--password-store=basic`
 - Symptom: after some Omarchy updates the browser is logged out of every site without being touched.
 - Evidence: at boot after the 2026-09-12/14 updates, `gnome-keyring-daemon` logged `keyring was in an invalid or unrecognized format` for both `Default_keyring.keyring` and `Default_Keyring.keyring`; Secret Service came up empty, Chromium minted a fresh "Chromium Safe Storage" key, and every cookie/password encrypted under the old key became undecryptable.
