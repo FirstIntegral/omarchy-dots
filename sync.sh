@@ -10,7 +10,7 @@
 #   3. drift-check pack files vs ~/.config targets
 #   4. drift → ./apply.sh (hypr + theme/font + default wallpaper)
 #
-# Does not touch shell.json, plugins, or OpenTabletDriver.
+# Does not touch shell.json, plugins, or agentic-OpenTabletDriver.
 #
 # Exit codes:
 #   0   up to date (no drift), or applied successfully

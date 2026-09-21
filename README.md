@@ -4,7 +4,7 @@ Public pack of **portable** Omarchy desktop config. Another machine clones this 
 
 This file is the apply playbook. An AI on the destination machine should read **this README** and run `./apply.sh`. Do not invent a different copy. Do not rsync `$HOME`.
 
-Appearance and shortcuts only. Bar layout, plugins, and OpenTabletDriver stay on the machine that owns them.
+Appearance and shortcuts only. Bar layout, plugins, and the tablet driver stay on the machine that owns them. The driver is **agentic-OpenTabletDriver** (`~/Projects/agentic-OpenTabletDriver`, `FirstIntegral/agentic-OpenTabletDriver`), not the stock OpenTabletDriver package.
 
 ## For the applying AI
 
@@ -19,7 +19,7 @@ You are on the **destination** Omarchy box. This is a config pack, not a softwar
 - Do **not** invent a copy. `./apply.sh` is the only mutation path.
 - Do **not** write `~/.config/omarchy/shell.json`. Bar layout is local.
 - Do **not** write `~/.config/omarchy/plugins/`. Plugins (Vigil, tray, …) are not this pack.
-- Do **not** write `~/.config/OpenTabletDriver/` or install/enable OpenTabletDriver. Tablet driver is a separate project (`agentic-OpenTabletDriver` on this box).
+- Do **not** write `~/.config/OpenTabletDriver/` and do **not** install or enable the stock `opentabletdriver` package. The pen is `~/Projects/agentic-OpenTabletDriver`. The fork still uses that XDG config dir and the `opentabletdriver` user unit. This pack does not install either.
 - Do **not** `omarchy plugin add` / `enable` / `remove`.
 - Do **not** force-push `main`.
 - Do **not** `curl | sh`.
@@ -46,7 +46,7 @@ cd ~/Projects/omarchy-dots
 1. Refuse root, refuse missing `omarchy`, refuse if `hypr/monitors.lua` is in the pack.
 2. Warn on Omarchy version mismatch vs `source.json`. Same major 4.x continues; other majors abort.
 3. Copy overwritten files to `~/.config/omarchy-dots-backup.<timestamp>/`.
-4. Install the files in the table below. Never touches `monitors.lua`, `shell.json`, plugins, or OpenTabletDriver.
+4. Install the files in the table below. Never touches `monitors.lua`, `shell.json`, plugins, or agentic-OpenTabletDriver (including `~/.config/OpenTabletDriver/`).
 5. `OMARCHY_THEME_SKIP_BACKGROUND=1 omarchy theme set "Osaka Jade"` and `omarchy font set "JetBrainsMono Nerd Font"`. Theme set normally **rotates** the wallpaper; the skip stops that. If the live background is not the file named in `source.json`, apply then runs `omarchy theme bg set` on that file.
 6. `hyprctl reload` (if Hyprland is running) then `hyprctl configerrors`.
 
@@ -76,7 +76,7 @@ Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead
 |-----------|----------|
 | `hypr/bindings.lua` | `~/.config/hypr/bindings.lua` (SUPER+L lock, SUPER+F files, SUPER+S screenshot) |
 | `hypr/hyprland.lua` | `~/.config/hypr/hyprland.lua` (prepends `~/.local/bin` to PATH) |
-| `hypr/input.lua` | `~/.config/hypr/input.lua` (pointer sensitivity; Hyprland ignores the G930L kernel HID so a tablet driver can own it) |
+| `hypr/input.lua` | `~/.config/hypr/input.lua` (pointer sensitivity; Hyprland ignores the G930L kernel HID so agentic-OpenTabletDriver can own the pen) |
 | `chromium/chromium-flags.conf` | `~/.config/chromium-flags.conf` (pins `--password-store=basic`) |
 | `omarchy/defaults/agent` | `~/.config/omarchy/defaults/agent` (`grok`) |
 | `local-bin/omarchy-screensaver` | `~/.local/bin/omarchy-screensaver` (matrix-only screensaver) |
@@ -91,14 +91,14 @@ Chromium pins `--password-store=basic` because a corrupted gnome-keyring (this b
 - `hypr/monitors.lua` — per machine
 - `omarchy/shell.json` — bar layout, idle, plugin widget ids
 - `~/.config/omarchy/plugins/` — Vigil, tray, anything else
-- OpenTabletDriver settings, packages, systemd — `agentic-OpenTabletDriver` owns that
+- agentic-OpenTabletDriver — fork daemon, settings in `~/.config/OpenTabletDriver/`, systemd drop-in on the `opentabletdriver` user unit. Do not install stock OpenTabletDriver.
 - Chromium profiles, tokens, fcitx (the one Chromium file in the pack is `chromium-flags.conf`)
 - Stock Omarchy files (looknfeel, autostart, branding, menu jsonc, invitation hooks)
 - Agents brain (`FirstIntegral/1config`)
 
 ## Updating the pack (source machine)
 
-When portable config changes on the source box, copy the changed files into this repo (still no `monitors.lua` / `shell.json` / plugins / OpenTabletDriver), commit, push. Destination: `git pull && ./apply.sh`.
+When portable config changes on the source box, copy the changed files into this repo (still no `monitors.lua` / `shell.json` / plugins / agentic-OpenTabletDriver), commit, push. Destination: `git pull && ./apply.sh`.
 
 ## Repo
 

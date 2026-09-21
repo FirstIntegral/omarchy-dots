@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Apply this Omarchy config pack to the current user on this machine.
 # Playbook: README.md. Never writes /usr/share/omarchy or hypr/monitors.lua.
-# Does not install plugins, does not touch shell.json, does not touch OpenTabletDriver.
+# Does not install plugins, does not touch shell.json, does not touch
+# agentic-OpenTabletDriver or ~/.config/OpenTabletDriver.
 
 set -euo pipefail
 
@@ -109,7 +110,7 @@ plan() {
   log "  never touch /usr/share/omarchy/"
   log "  never touch ~/.config/omarchy/shell.json"
   log "  never touch ~/.config/omarchy/plugins/"
-  log "  never touch ~/.config/OpenTabletDriver/"
+  log "  never touch ~/.config/OpenTabletDriver/ (agentic-OpenTabletDriver)"
   local pair from to
   for pair in "${copy_files[@]}"; do
     from=${pair%%:*}
@@ -195,5 +196,5 @@ log ""
 log "DONE. Next:"
 log "  1. Set monitors on THIS machine (Super+Space → Setup → Monitors). Do not copy another box's monitors.lua."
 log "  2. Fingerprint reader?  omarchy setup security fingerprint"
-log "  3. Plugins (Vigil, tray), bar layout, and OpenTabletDriver are not this pack."
+log "  3. Plugins (Vigil, tray), bar layout, and agentic-OpenTabletDriver are not this pack."
 log "  4. Agents brain is separate: clone FirstIntegral/1config to ~/.agents && bash ~/.agents/setup.sh"
