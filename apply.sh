@@ -82,6 +82,8 @@ copy_files=(
   "chromium/chromium-flags.conf:${HOME_CONFIG}/chromium-flags.conf"
   "omarchy/defaults/agent:${OMARCHY_DIR}/defaults/agent"
   "local-bin/omarchy-screensaver:${LOCAL_BIN_DIR}/omarchy-screensaver"
+  "omarchy/hooks/repin-wallpaper:${OMARCHY_DIR}/hooks/theme-set.d/repin-wallpaper"
+  "omarchy/hooks/repin-wallpaper:${OMARCHY_DIR}/hooks/post-boot.d/repin-wallpaper"
 )
 
 backup_if_exists() {
@@ -117,10 +119,10 @@ plan() {
   if (( SKIP_THEME )); then
     log "  theme/font: skipped"
   else
-    log "  omarchy theme set \"Osaka Jade\""
+    log "  OMARCHY_THEME_SKIP_BACKGROUND=1 omarchy theme set \"Osaka Jade\""
     log "  omarchy font set \"JetBrainsMono Nerd Font\""
     if [[ -n "$WALLPAPER" ]]; then
-      log "  omarchy theme bg set \"$WALLPAPER_FILE\"  (from omarchy-wallpapers project)"
+      log "  re-pin wallpaper if needed: $WALLPAPER_FILE"
     fi
   fi
   log "  hyprctl reload + configerrors (if Hyprland is running)"
@@ -156,12 +158,20 @@ for pair in "${copy_files[@]}"; do
 done
 
 if (( ! SKIP_THEME )); then
-  omarchy theme set "Osaka Jade" || warn "theme set failed"
+  # theme set rotates the background (and the project-path symlink never matches
+  # the config symlink list, so it jumps to the first image). Skip that.
+  # The theme-set hook re-pins too, in case something else calls theme set.
+  OMARCHY_THEME_SKIP_BACKGROUND=1 omarchy theme set "Osaka Jade" || warn "theme set failed"
   omarchy font set "JetBrainsMono Nerd Font" || warn "font set failed"
-  # theme set rotates the background link; re-pin the pack's default wallpaper.
   if [[ -n "$WALLPAPER" ]]; then
     if [[ -f "$WALLPAPER_FILE" ]]; then
-      omarchy theme bg set "$WALLPAPER_FILE" || warn "wallpaper set failed"
+      live_bg="$(readlink -f "$HOME/.local/state/omarchy/current/background" 2>/dev/null || true)"
+      want_bg="$(readlink -f "$WALLPAPER_FILE")"
+      if [[ "$live_bg" != "$want_bg" ]]; then
+        omarchy theme bg set "$WALLPAPER_FILE" || warn "wallpaper set failed"
+      else
+        log "wallpaper already $WALLPAPER"
+      fi
     else
       warn "wallpaper '$WALLPAPER' not found — clone omarchy-wallpapers to $WALLPAPER_DIR/.."
     fi

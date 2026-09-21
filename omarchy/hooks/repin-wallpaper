@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Put the pack's default wallpaper back after `omarchy theme set` rotates it.
+# Also runs from post-boot, so a login still re-pins when GitHub is unreachable
+# and dots sync bails before its drift check.
+#
+# Image files stay in ~/Projects/omarchy-wallpapers. This script only points
+# the Omarchy current-background symlink at one of them.
+#
+# theme-set passes the snake-cased theme slug as $1. post-boot passes nothing.
+# A different theme is left alone.
+
+set -euo pipefail
+
+slug="${1:-}"
+src="$HOME/Projects/omarchy-dots/source.json"
+[ -f "$src" ] || exit 0
+
+want_theme="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("theme",""))' "$src" 2>/dev/null || true)"
+name="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("wallpaper",""))' "$src" 2>/dev/null || true)"
+[ -n "$want_theme" ] && [ -n "$name" ] || exit 0
+
+want_slug="$(printf '%s' "$want_theme" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')"
+if [ -n "$slug" ] && [ "$slug" != "$want_slug" ]; then
+  exit 0
+fi
+
+file="$HOME/Projects/omarchy-wallpapers/backgrounds/$name"
+[ -f "$file" ] || exit 0
+
+live="$(readlink -f "$HOME/.local/state/omarchy/current/background" 2>/dev/null || true)"
+want="$(readlink -f "$file")"
+[ "$live" = "$want" ] && exit 0
+
+exec omarchy theme bg set "$file"

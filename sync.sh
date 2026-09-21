@@ -86,6 +86,8 @@ pairs=(
   "chromium/chromium-flags.conf:$HOME_CONFIG/chromium-flags.conf"
   "omarchy/defaults/agent:$HOME_CONFIG/omarchy/defaults/agent"
   "local-bin/omarchy-screensaver:$HOME/.local/bin/omarchy-screensaver"
+  "omarchy/hooks/repin-wallpaper:$HOME_CONFIG/omarchy/hooks/theme-set.d/repin-wallpaper"
+  "omarchy/hooks/repin-wallpaper:$HOME_CONFIG/omarchy/hooks/post-boot.d/repin-wallpaper"
 )
 
 drift=()
@@ -108,6 +110,8 @@ fi
 # Default wallpaper: pinned by name in source.json, owned by the
 # omarchy-wallpapers project (NOT this pack — no image files here).
 wallpaper="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("wallpaper",""))' "$ROOT/source.json" 2>/dev/null || true)"
+wall_file=""
+wall_drift=0
 if [ -n "$wallpaper" ]; then
   wall_file="$HOME/Projects/omarchy-wallpapers/backgrounds/$wallpaper"
   live_bg="$(readlink -f "$HOME/.local/state/omarchy/current/background" 2>/dev/null || true)"
@@ -115,6 +119,7 @@ if [ -n "$wallpaper" ]; then
     echo "dots-sync: note — pack wallpaper '$wallpaper' missing (clone FirstIntegral/omarchy-wallpapers to ~/Projects/omarchy-wallpapers); not treated as drift"
   elif [ "$live_bg" != "$(readlink -f "$wall_file" 2>/dev/null)" ]; then
     drift+=("wallpaper (${live_bg:-unset} vs pack $wallpaper)")
+    wall_drift=1
   fi
 fi
 
@@ -125,6 +130,18 @@ fi
 
 echo "dots-sync: drift detected:"
 printf '  - %s\n' "${drift[@]}"
+
+# Wallpaper-only: re-pin. Do not run apply — `omarchy theme set` rotates the
+# background even when the theme name is already correct.
+if [ "$wall_drift" -eq 1 ] && [ "${#drift[@]}" -eq 1 ]; then
+  echo "dots-sync: wallpaper only — re-pinning $wallpaper (no theme set)"
+  if omarchy theme bg set "$wall_file"; then
+    echo "dots-sync: wallpaper re-pinned"
+    exit 0
+  fi
+  echo "dots-sync: wallpaper re-pin failed" >&2
+  exit 4
+fi
 
 if [ -n "$(git -C "$ROOT" status --porcelain --untracked-files=no)" ]; then
   echo "dots-sync: pack repo has uncommitted changes to tracked files — not auto-applying"

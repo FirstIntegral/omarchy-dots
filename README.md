@@ -47,7 +47,7 @@ cd ~/Projects/omarchy-dots
 2. Warn on Omarchy version mismatch vs `source.json`. Same major 4.x continues; other majors abort.
 3. Copy overwritten files to `~/.config/omarchy-dots-backup.<timestamp>/`.
 4. Install the files in the table below. Never touches `monitors.lua`, `shell.json`, plugins, or OpenTabletDriver.
-5. `omarchy theme set "Osaka Jade"` and `omarchy font set "JetBrainsMono Nerd Font"` (theme backgrounds come with the theme).
+5. `OMARCHY_THEME_SKIP_BACKGROUND=1 omarchy theme set "Osaka Jade"` and `omarchy font set "JetBrainsMono Nerd Font"`. Theme set normally **rotates** the wallpaper; the skip stops that. If the live background is not the file named in `source.json`, apply then runs `omarchy theme bg set` on that file.
 6. `hyprctl reload` (if Hyprland is running) then `hyprctl configerrors`.
 
 ### Boot sync
@@ -58,7 +58,9 @@ cd ~/Projects/omarchy-dots
 bash ~/Projects/omarchy-dots/sync.sh
 ```
 
-It fetches `origin/main` (validated remote, BatchMode, ff-only), pulls if behind, then drift-checks pack files against live targets. Drift → runs `./apply.sh`. Local repo edits are never touched.
+It fetches `origin/main` (validated remote, BatchMode, ff-only), pulls if behind, then drift-checks pack files against live targets. Drift → runs `./apply.sh`. Wallpaper-only drift does **not** run apply (that would theme-set); it re-pins with `omarchy theme bg set`. Local repo edits are never touched.
+
+Login also runs `repin-wallpaper` from `post-boot` (about two seconds after Hyprland starts) and again after every `theme set` of Osaka Jade. That re-pin does not need GitHub. If the wallpapers repo is not cloned, it no-ops.
 
 Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead (nothing applied) · `3` dirty repo (nothing pulled) · `4` divergence/apply failed.
 
@@ -78,8 +80,9 @@ Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead
 | `chromium/chromium-flags.conf` | `~/.config/chromium-flags.conf` (pins `--password-store=basic`) |
 | `omarchy/defaults/agent` | `~/.config/omarchy/defaults/agent` (`grok`) |
 | `local-bin/omarchy-screensaver` | `~/.local/bin/omarchy-screensaver` (matrix-only screensaver) |
+| `omarchy/hooks/repin-wallpaper` | `~/.config/omarchy/hooks/theme-set.d/repin-wallpaper` and `post-boot.d/repin-wallpaper` |
 
-Also: Osaka Jade + JetBrainsMono Nerd Font, and the **default wallpaper** pinned by name in `source.json` (`wallpaper`). The image files are **not** in this pack — they belong to `FirstIntegral/omarchy-wallpapers` (`~/Projects/omarchy-wallpapers/backgrounds/`). `apply.sh` re-pins it after `theme set` (which rotates backgrounds), and `sync.sh` treats a wrong live background as drift. On a machine without the wallpapers project cloned, both skip it with a note.
+Also: Osaka Jade + JetBrainsMono Nerd Font, and the **default wallpaper** pinned by name in `source.json` (`wallpaper`, currently `28-jade-bamboo-path.jpg`). The image files are **not** in this pack and are **not** copied into `~/.config`. They belong to `FirstIntegral/omarchy-wallpapers` (`~/Projects/omarchy-wallpapers/backgrounds/`). Omarchy's cycle list is symlinks only: `~/.config/omarchy/backgrounds/<theme>/` → those files. The live selection is one symlink, `~/.local/state/omarchy/current/background`, aimed at the project file. On a machine without the wallpapers project cloned, apply and sync skip the pin with a note.
 
 Chromium pins `--password-store=basic` because a corrupted gnome-keyring (this box gets `invalid or unrecognized format` after some updates) makes Chromium mint a fresh storage key and silently log out of every site.
 
