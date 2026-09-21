@@ -79,7 +79,7 @@ Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead
 | `omarchy/defaults/agent` | `~/.config/omarchy/defaults/agent` (`grok`) |
 | `local-bin/omarchy-screensaver` | `~/.local/bin/omarchy-screensaver` (matrix-only screensaver) |
 
-Also: Osaka Jade + JetBrainsMono Nerd Font. Wallpaper is the theme's backgrounds, not a separate file in this pack.
+Also: Osaka Jade + JetBrainsMono Nerd Font, and the **default wallpaper** pinned by name in `source.json` (`wallpaper`). The image files are **not** in this pack — they belong to `FirstIntegral/omarchy-wallpapers` (`~/Projects/omarchy-wallpapers/backgrounds/`). `apply.sh` re-pins it after `theme set` (which rotates backgrounds), and `sync.sh` treats a wrong live background as drift. On a machine without the wallpapers project cloned, both skip it with a note.
 
 Chromium pins `--password-store=basic` because a corrupted gnome-keyring (this box gets `invalid or unrecognized format` after some updates) makes Chromium mint a fresh storage key and silently log out of every site.
 

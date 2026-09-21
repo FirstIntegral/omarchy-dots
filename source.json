@@ -4,6 +4,8 @@
   "channel": "stable",
   "theme": "Osaka Jade",
   "font": "JetBrainsMono Nerd Font",
+  "wallpaper": "28-jade-bamboo-path.jpg",
+  "wallpaper_repo": "git@github.com:FirstIntegral/omarchy-wallpapers.git",
   "default_agent": "grok",
   "pack_repo": "git@github.com:FirstIntegral/omarchy-dots.git"
 }

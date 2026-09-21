@@ -8,7 +8,7 @@
 #   1. fetch origin/main (validated remote only)
 #   2. if local repo behind → fast-forward pull (never over local edits, never over unpushed commits)
 #   3. drift-check pack files vs ~/.config targets
-#   4. drift → ./apply.sh (hypr + theme/font only)
+#   4. drift → ./apply.sh (hypr + theme/font + default wallpaper)
 #
 # Does not touch shell.json, plugins, or OpenTabletDriver.
 #
@@ -100,9 +100,22 @@ for pair in "${pairs[@]}"; do
 done
 
 theme_cur="$(omarchy theme current 2>/dev/null || true)"
-theme_want="$(python3 -c 'import json; print(json.load(open("source.json"))["theme"])' 2>/dev/null || true)"
+theme_want="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["theme"])' "$ROOT/source.json" 2>/dev/null || true)"
 if [ -n "$theme_want" ] && [ -n "$theme_cur" ] && [ "$theme_cur" != "$theme_want" ]; then
   drift+=("theme ($theme_cur vs pack $theme_want)")
+fi
+
+# Default wallpaper: pinned by name in source.json, owned by the
+# omarchy-wallpapers project (NOT this pack — no image files here).
+wallpaper="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("wallpaper",""))' "$ROOT/source.json" 2>/dev/null || true)"
+if [ -n "$wallpaper" ]; then
+  wall_file="$HOME/Projects/omarchy-wallpapers/backgrounds/$wallpaper"
+  live_bg="$(readlink -f "$HOME/.local/state/omarchy/current/background" 2>/dev/null || true)"
+  if [ ! -f "$wall_file" ]; then
+    echo "dots-sync: note — pack wallpaper '$wallpaper' missing (clone FirstIntegral/omarchy-wallpapers to ~/Projects/omarchy-wallpapers); not treated as drift"
+  elif [ "$live_bg" != "$(readlink -f "$wall_file" 2>/dev/null)" ]; then
+    drift+=("wallpaper (${live_bg:-unset} vs pack $wallpaper)")
+  fi
 fi
 
 if [ "${#drift[@]}" -eq 0 ]; then

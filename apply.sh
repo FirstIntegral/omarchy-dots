@@ -69,6 +69,12 @@ HYPR_DIR="$HOME_CONFIG/hypr"
 OMARCHY_DIR="$HOME_CONFIG/omarchy"
 LOCAL_BIN_DIR="$HOME/.local/bin"
 
+# Default wallpaper lives in the omarchy-wallpapers project, not in this pack.
+# source.json pins the file name; the image itself is owned by that repo.
+WALLPAPER="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("wallpaper",""))' "$ROOT/source.json" 2>/dev/null || true)"
+WALLPAPER_DIR="$HOME/Projects/omarchy-wallpapers/backgrounds"
+WALLPAPER_FILE="$WALLPAPER_DIR/$WALLPAPER"
+
 copy_files=(
   "hypr/bindings.lua:${HYPR_DIR}/bindings.lua"
   "hypr/hyprland.lua:${HYPR_DIR}/hyprland.lua"
@@ -113,6 +119,9 @@ plan() {
   else
     log "  omarchy theme set \"Osaka Jade\""
     log "  omarchy font set \"JetBrainsMono Nerd Font\""
+    if [[ -n "$WALLPAPER" ]]; then
+      log "  omarchy theme bg set \"$WALLPAPER_FILE\"  (from omarchy-wallpapers project)"
+    fi
   fi
   log "  hyprctl reload + configerrors (if Hyprland is running)"
 }
@@ -149,6 +158,14 @@ done
 if (( ! SKIP_THEME )); then
   omarchy theme set "Osaka Jade" || warn "theme set failed"
   omarchy font set "JetBrainsMono Nerd Font" || warn "font set failed"
+  # theme set rotates the background link; re-pin the pack's default wallpaper.
+  if [[ -n "$WALLPAPER" ]]; then
+    if [[ -f "$WALLPAPER_FILE" ]]; then
+      omarchy theme bg set "$WALLPAPER_FILE" || warn "wallpaper set failed"
+    else
+      warn "wallpaper '$WALLPAPER' not found — clone omarchy-wallpapers to $WALLPAPER_DIR/.."
+    fi
+  fi
 fi
 
 if [[ -n ${HYPRLAND_INSTANCE_SIGNATURE:-} ]] && command -v hyprctl >/dev/null; then

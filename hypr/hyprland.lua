@@ -31,3 +31,10 @@ require("default.hypr.toggles")
 
 -- Add any other personal Hyprland configuration below.
 -- o.window("qemu", { workspace = "5" })
+
+-- imv: stock Omarchy tags it +floating-window (875x600, centered). That is why
+-- wallpapers open postage-stamp sized. Strip the tag so the float/size rules
+-- miss, then fullscreen on the monitor. Last matching rule wins.
+o.window("^imv$", { tag = "-floating-window" })
+o.window("^imv$", { tile = true })
+o.window("^imv$", { fullscreen = true })
