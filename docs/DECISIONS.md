@@ -62,6 +62,23 @@
 - Still no image files in this pack. Still no copies in `~/.config`. The only bytes are `~/Projects/omarchy-wallpapers/backgrounds/`. The config directory holds symlinks so `omarchy theme bg next` can see the catalog; `current/background` points straight at the project file.
 - Rejected: copying the JPEG into the pack or into `~/.config` (user wants one home for the project). Rejected: dropping `theme set` from apply (theme extras still have to run). Rejected: relying on re-pin-after-rotate (this boot already lost that race until a later `bg set`).
 
+## 2026-09-29 Sync drift gets categories; local edits are never clobbered
+- Before: any byte diff between a pack file and its live target ran `apply.sh`, which installs the whole pack — a deliberate live tweak (an extra binding tested by hand) was silently overwritten at the next login.
+- Now `sync.sh` keeps a machine-local state file `~/.local/state/omarchy-dots/sync-state` recording the sha256 of each target as last applied. Per-file drift is classified: missing / incoming (pack moved, live untouched, or first sync run) / local edit (pack unchanged, live moved) / both changed.
+- Auto-apply runs only when drift is purely missing/incoming (+ theme/wallpaper). Any local edit or both-changed file stops the whole apply (apply.sh installs everything, so a mixed apply would clobber the edits) and exits `5` with per-file instructions: copy the live files into the pack and push, or run `apply.sh` to force the pack.
+- Theme and wallpaper drift keep their previous handling (theme set / re-pin).
+- Rejected: per-file selective apply flags on `apply.sh` (more surface, same human decision needed anyway). Rejected: prompting at boot (unattended; must never hang). Rejected: auto-committing local edits up like config-sync's Publish (pack stays hand-curated; see 2026-09-05 ADR). Rejected: a single "last sync" timestamp (a per-file record is what makes local-edit detection precise).
+
+## 2026-09-29 Default agent is opencode, not grok
+- Live `~/.config/omarchy/defaults/agent` said `opencode` (user switched tools; deepseek-v4-pro via opencode). Sync's new local-edit guard refused to clobber it with the pack's `grok`.
+- Pack follows the live machine: `omarchy/defaults/agent` and `source.json.default_agent` now say `opencode`.
+- Rejected: forcing `grok` back with apply.sh (live state was the deliberate one).
+
+## 2026-09-29 config-sync comparison: what we took, what we rejected
+- Compared against `gladimdim.config-sync` (bar plugin: two-way, private repo, syncs everything).
+- Adopted: drift categories in `sync.sh` (previous entry). Adopted: a `plugins` list in `source.json` — **info only**: `apply.sh` checks each listed plugin and prints the exact `omarchy plugin add` command for missing ones. Never installs/enables/removes (keeps the 2026-09-19 "no plugins in pack" rule and the bar-layout-stays-local rule; a fresh machine still needs a human to run the command).
+- Rejected: Publish / two-way auto-commit (pack stays hand-curated; see 2026-09-05 ADR). Rejected: `.omarchy-config.json` `machine_local` list (exactly one machine-local file today — `monitors.lua`; new pack files are hand-reviewed in the commit that adds them). Rejected: repo-shape validation (my flow has one fixed, validated origin — no free-form URL to mis-paste). Nothing to adopt on exec bits (`cp -a` already preserves them) or no-prompt git (BatchMode already).
+
 ## 2026-09-22 Docs name agentic-OpenTabletDriver, not stock OpenTabletDriver
 - The apply playbook still said "OpenTabletDriver" as the thing this pack leaves alone. On this machine the driver is the fork `~/Projects/agentic-OpenTabletDriver` (`FirstIntegral/agentic-OpenTabletDriver`). README, AGENTS, and apply/sync wording now say that.
 - The fork kept the upstream paths. `~/.config/OpenTabletDriver/` and the `opentabletdriver` user unit are still the right names, and this pack still must not write or install them. Hyprland still only ignores the G930L kernel HID.

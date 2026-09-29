@@ -18,6 +18,7 @@
 #   2   local repo ahead (unpushed commits) — nothing applied
 #   3   behind but repo dirty — nothing pulled/applied
 #   4   divergence / not a repo / wrong branch / wrong remote / apply failed
+#   5   live files locally edited (or changed on both sides) — nothing applied
 set -uo pipefail
 
 ROOT=$(cd "$(dirname "$0")" && pwd)
@@ -90,21 +91,59 @@ pairs=(
   "omarchy/hooks/repin-wallpaper:$HOME_CONFIG/omarchy/hooks/post-boot.d/repin-wallpaper"
 )
 
-drift=()
+# Machine-local memory of what this pack last wrote to each target, so sync
+# can tell "live was edited locally" from "pack moved" instead of blindly
+# re-applying the pack over local tweaks.
+STATE_DIR="$HOME/.local/state/omarchy-dots"
+STATE_FILE="$STATE_DIR/sync-state"   # lines: "<target path> <sha256 of pack file>"
+
+state_get() { # $1 target path
+  [ -f "$STATE_FILE" ] || return 1
+  awk -v k="$1" '$1==k {print $2; exit}' "$STATE_FILE"
+}
+state_put() { # $1 target path  $2 sha256
+  mkdir -p "$STATE_DIR"
+  local tmp="$STATE_FILE.tmp.$$"
+  if [ -f "$STATE_FILE" ]; then
+    grep -vF -e "$1 " "$STATE_FILE" > "$tmp" || true
+    mv "$tmp" "$STATE_FILE"
+  fi
+  printf '%s %s\n' "$1" "$2" >> "$STATE_FILE"
+}
+
+incoming=() localedits=() bothchanged=() missing=()
+
 for pair in "${pairs[@]}"; do
   src="$ROOT/${pair%%:*}"
   dst="${pair#*:}"
+  [ -f "$src" ] || { echo "dots-sync: pack file missing: $src" >&2; exit 4; }
   if [ ! -f "$dst" ]; then
-    drift+=("${pair%%:*} (missing)")
-  elif ! cmp -s "$src" "$dst"; then
-    drift+=("${pair%%:*}")
+    missing+=("$dst")
+    continue
+  fi
+  live_sha="$(sha256sum "$dst" | cut -d' ' -f1)"
+  pack_sha="$(sha256sum "$src" | cut -d' ' -f1)"
+  if [ "$live_sha" = "$pack_sha" ]; then
+    state_put "$dst" "$pack_sha"
+    continue
+  fi
+  last_sha="$(state_get "$dst" 2>/dev/null || true)"
+  if [ -z "$last_sha" ]; then
+    incoming+=("$dst")          # no record yet (first sync run) → trust the pack
+  elif [ "$last_sha" = "$pack_sha" ]; then
+    localedits+=("$dst")        # pack unchanged since last apply → live was edited
+  elif [ "$last_sha" = "$live_sha" ]; then
+    incoming+=("$dst")          # pack moved, live untouched
+  else
+    bothchanged+=("$dst")       # pack and live both moved
   fi
 done
 
 theme_cur="$(omarchy theme current 2>/dev/null || true)"
 theme_want="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["theme"])' "$ROOT/source.json" 2>/dev/null || true)"
+theme_drift=""
 if [ -n "$theme_want" ] && [ -n "$theme_cur" ] && [ "$theme_cur" != "$theme_want" ]; then
-  drift+=("theme ($theme_cur vs pack $theme_want)")
+  theme_drift="theme ($theme_cur vs pack $theme_want)"
 fi
 
 # Default wallpaper: pinned by name in source.json, owned by the
@@ -118,22 +157,43 @@ if [ -n "$wallpaper" ]; then
   if [ ! -f "$wall_file" ]; then
     echo "dots-sync: note — pack wallpaper '$wallpaper' missing (clone FirstIntegral/omarchy-wallpapers to ~/Projects/omarchy-wallpapers); not treated as drift"
   elif [ "$live_bg" != "$(readlink -f "$wall_file" 2>/dev/null)" ]; then
-    drift+=("wallpaper (${live_bg:-unset} vs pack $wallpaper)")
     wall_drift=1
   fi
 fi
 
-if [ "${#drift[@]}" -eq 0 ]; then
+file_drift=0
+{ [ ${#missing[@]} -gt 0 ] || [ ${#incoming[@]} -gt 0 ]; } && file_drift=1
+
+if [ "$file_drift" -eq 0 ] && [ ${#localedits[@]} -eq 0 ] && [ ${#bothchanged[@]} -eq 0 ] \
+   && [ -z "$theme_drift" ] && [ "$wall_drift" -eq 0 ]; then
   echo "dots-sync: config in sync with origin/$BRANCH"
   exit 0
 fi
 
 echo "dots-sync: drift detected:"
-printf '  - %s\n' "${drift[@]}"
+[ ${#missing[@]} -gt 0 ]  && printf '  - %s (missing, will install)\n' "${missing[@]}"
+[ ${#incoming[@]} -gt 0 ] && printf '  - %s (incoming, will apply)\n' "${incoming[@]}"
+[ ${#localedits[@]} -gt 0 ] && printf '  - %s (local edit)\n' "${localedits[@]}"
+[ ${#bothchanged[@]} -gt 0 ] && printf '  - %s (changed on both sides)\n' "${bothchanged[@]}"
+[ -n "$theme_drift" ] && echo "  - $theme_drift"
+[ "$wall_drift" -eq 1 ] && echo "  - wallpaper"
+
+# Local edits (or files changed on both sides) need a human decision. Never
+# clobber them silently — and do not apply the rest either: apply.sh installs
+# the whole pack, so a mixed apply would overwrite the local edits on the way.
+if [ ${#localedits[@]} -gt 0 ] || [ ${#bothchanged[@]} -gt 0 ]; then
+  echo "dots-sync: nothing applied — resolve by hand:"
+  echo "  keep your edits:  copy the live files into the pack repo, commit, push"
+  echo "  force the pack:   run $ROOT/apply.sh (overwrites the edits)"
+  if [ ${#missing[@]} -gt 0 ] || [ ${#incoming[@]} -gt 0 ]; then
+    echo "  (${#missing[@]} missing / ${#incoming[@]} incoming also waiting; they apply after this is resolved)"
+  fi
+  exit 5
+fi
 
 # Wallpaper-only: re-pin. Do not run apply — `omarchy theme set` rotates the
 # background even when the theme name is already correct.
-if [ "$wall_drift" -eq 1 ] && [ "${#drift[@]}" -eq 1 ]; then
+if [ "$wall_drift" -eq 1 ] && [ "$file_drift" -eq 0 ] && [ -z "$theme_drift" ]; then
   echo "dots-sync: wallpaper only — re-pinning $wallpaper (no theme set)"
   if omarchy theme bg set "$wall_file"; then
     echo "dots-sync: wallpaper re-pinned"
@@ -150,7 +210,10 @@ fi
 
 echo "dots-sync: applying pack…"
 if "$ROOT/apply.sh"; then
-  echo "dots-sync: applied (${#drift[@]} drift item(s) fixed)"
+  echo "dots-sync: applied (${#missing[@]} missing, ${#incoming[@]} incoming file(s) fixed)"
+  for pair in "${pairs[@]}"; do
+    state_put "${pair#*:}" "$(sha256sum "$ROOT/${pair%%:*}" | cut -d' ' -f1)"
+  done
   exit 0
 else
   echo "dots-sync: apply failed" >&2

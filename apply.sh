@@ -126,6 +126,7 @@ plan() {
       log "  re-pin wallpaper if needed: $WALLPAPER_FILE"
     fi
   fi
+  log "  plugin check: note-only if a listed plugin is missing (never auto-install)"
   log "  hyprctl reload + configerrors (if Hyprland is running)"
 }
 
@@ -157,6 +158,21 @@ for pair in "${copy_files[@]}"; do
   install_file "$ROOT/$from" "$to"
   log "installed $to"
 done
+
+# Plugins: info only. The pack never installs, enables, or removes plugins
+# (hard rule). source.json lists which plugins belong on this setup; apply
+# prints the exact command for any that are missing.
+while read -r pid purl; do
+  [ -n "$pid" ] || continue
+  if [ -d "$OMARCHY_DIR/plugins/$pid" ]; then
+    log "plugin present: $pid"
+  else
+    log "NOTE: plugin '$pid' is not installed. Install by hand:"
+    log "  omarchy plugin add $purl"
+  fi
+done < <(python3 -c 'import json,sys
+for p in json.load(open(sys.argv[1])).get("plugins", []):
+    print(p.get("id",""), p.get("url",""))' "$ROOT/source.json" 2>/dev/null)
 
 if (( ! SKIP_THEME )); then
   # theme set rotates the background (and the project-path symlink never matches
