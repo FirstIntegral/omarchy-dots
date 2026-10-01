@@ -90,6 +90,7 @@ pairs=(
   "local-bin/omarchy-screensaver:$HOME/.local/bin/omarchy-screensaver"
   "omarchy/hooks/repin-wallpaper:$HOME_CONFIG/omarchy/hooks/theme-set.d/repin-wallpaper"
   "omarchy/hooks/repin-wallpaper:$HOME_CONFIG/omarchy/hooks/post-boot.d/repin-wallpaper"
+  "omarchy/hooks/heal-keyring:$HOME_CONFIG/omarchy/hooks/post-boot.d/heal-keyring"
 )
 
 # Machine-local memory of what this pack last wrote to each target, so sync

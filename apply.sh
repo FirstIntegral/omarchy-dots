@@ -46,6 +46,7 @@ for req in \
   "$ROOT/chromium/chromium-flags.conf" \
   "$ROOT/omarchy/defaults/agent" \
   "$ROOT/omarchy/shell.json" \
+  "$ROOT/omarchy/hooks/heal-keyring" \
   "$ROOT/local-bin/omarchy-screensaver" \
   "$ROOT/source.json"
 do
@@ -87,6 +88,7 @@ copy_files=(
   "local-bin/omarchy-screensaver:${LOCAL_BIN_DIR}/omarchy-screensaver"
   "omarchy/hooks/repin-wallpaper:${OMARCHY_DIR}/hooks/theme-set.d/repin-wallpaper"
   "omarchy/hooks/repin-wallpaper:${OMARCHY_DIR}/hooks/post-boot.d/repin-wallpaper"
+  "omarchy/hooks/heal-keyring:${OMARCHY_DIR}/hooks/post-boot.d/heal-keyring"
 )
 
 backup_if_exists() {
@@ -174,6 +176,12 @@ while read -r pid purl; do
 done < <(python3 -c 'import json,sys
 for p in json.load(open(sys.argv[1])).get("plugins", []):
     print(p.get("id",""), p.get("url",""))' "$ROOT/source.json" 2>/dev/null)
+
+# Heal a broken Secret Service default keyring if this machine has one
+# (post-boot hook also runs it at every login).
+if [ -x "$OMARCHY_DIR/hooks/post-boot.d/heal-keyring" ]; then
+  "$OMARCHY_DIR/hooks/post-boot.d/heal-keyring" || warn "heal-keyring reported a problem"
+fi
 
 if (( ! SKIP_THEME )); then
   # theme set rotates the background (and the project-path symlink never matches

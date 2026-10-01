@@ -67,6 +67,8 @@ Wallpaper-only drift does **not** run apply (that would theme-set); it re-pins w
 
 Login also runs `repin-wallpaper` from `post-boot` (about two seconds after Hyprland starts) and again after every `theme set` of Osaka Jade. That re-pin does not need GitHub. If the wallpapers repo is not cloned, it no-ops.
 
+Login also runs `heal-keyring` from `post-boot`: if the Secret Service default keyring is broken (unreadable files squatting the `Default` name — the "Choose password for new keyring" loop in Electron apps), it parks the unreadable files, writes a fresh unencrypted default keyring, and restarts the keyring daemon in place. No-op when healthy.
+
 Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead (nothing applied) · `3` dirty repo (nothing pulled) · `4` divergence/apply failed · `5` local edits or both-changed (nothing applied, resolve by hand).
 
 ### After apply
@@ -87,6 +89,7 @@ Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead
 | `omarchy/shell.json` | `~/.config/omarchy/shell.json` (bar layout, idle; left section is workspaces only, no `omarchy.menu` logo) |
 | `local-bin/omarchy-screensaver` | `~/.local/bin/omarchy-screensaver` (matrix-only screensaver) |
 | `omarchy/hooks/repin-wallpaper` | `~/.config/omarchy/hooks/theme-set.d/repin-wallpaper` and `post-boot.d/repin-wallpaper` |
+| `omarchy/hooks/heal-keyring` | `~/.config/omarchy/hooks/post-boot.d/heal-keyring` (fixes a broken Secret Service default keyring at every login; also runs once during apply) |
 
 Also: Osaka Jade + JetBrainsMono Nerd Font, and the **default wallpaper** pinned by name in `source.json` (`wallpaper`, currently `28-jade-bamboo-path.jpg`). The image files are **not** in this pack and are **not** copied into `~/.config`. They belong to `FirstIntegral/omarchy-wallpapers` (`~/Projects/omarchy-wallpapers/backgrounds/`). Omarchy's cycle list is symlinks only: `~/.config/omarchy/backgrounds/<theme>/` → those files. The live selection is one symlink, `~/.local/state/omarchy/current/background`, aimed at the project file. On a machine without the wallpapers project cloned, apply and sync skip the pin with a note.
 

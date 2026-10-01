@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# Heal a broken Secret Service default keyring so Electron/libsecret apps
+# (Grok Bot, ProtonVPN, …) stop asking "Choose password for new keyring".
+#
+# Runs from post-boot on every login. Cheap no-op when the default collection
+# is healthy. Only acts when it is broken: parks unreadable keyring files
+# (never deletes), writes a fresh unencrypted Default keyring, repoints the
+# daemon's default, and restarts the daemon in place.
+#
+# Health signal: the default pointer names an existing, unencrypted keyring
+# file, and THIS boot's user journal has no "invalid or unrecognized format"
+# line for any of the canonical Default keyring files. The Secret Service
+# alias object is NOT used — gnome-keyring leaves it dangling even when the
+# default collection works.
+#
+# See docs/DECISIONS.md 2026-10-02 for the full diagnosis.
+
+set -uo pipefail
+
+KR="$HOME/.local/share/keyrings"
+LOG_TAG="heal-keyring"
+log() { printf '%s\n' "$*"; }
+warn() { printf '%s: %s\n' "$LOG_TAG" "$*" >&2; }
+
+canonical_files=(Default.keyring Default_keyring.keyring Default_Keyring.keyring)
+
+# Filesystem half: pointer -> existing, parses, unencrypted (auto-opens).
+files_ok() {
+  [ -f "$KR/default" ] || return 1
+  local name f
+  name="$(tr -d '\n ' < "$KR/default")"
+  [ -n "$name" ] || return 1
+  f="$KR/${name}.keyring"
+  [ -f "$f" ] || return 1
+  head -c 9 "$f" | grep -q '^\[keyring\]' || return 1
+  grep -q '^password=' "$f" && return 1
+  return 0
+}
+
+# Journal half: daemon must not have rejected a canonical file this boot.
+journal_clean() {
+  local out
+  out="$(journalctl --user -b -q --no-pager 2>/dev/null \
+    | grep -F 'invalid or unrecognized format' || true)"
+  local f
+  for f in "${canonical_files[@]}"; do
+    printf '%s\n' "$out" | grep -Fq "/$f" && return 1
+  done
+  return 0
+}
+
+probe() {
+  files_ok && journal_clean
+}
+
+if probe; then
+  exit 0
+fi
+
+warn "default keyring broken — healing"
+
+mkdir -p "$KR"
+stamp="$(date +%Y%m%d-%H%M%S)"
+
+for name in "${canonical_files[@]}"; do
+  f="$KR/$name"
+  [ -e "$f" ] || continue
+  mv "$f" "$f.bricked-$stamp" && warn "parked $name -> $name.bricked-$stamp"
+done
+
+printf '[keyring]\ndisplay-name=Default\nctime=%s\nmtime=0\nlock-on-idle=false\nlock-after=false\n' \
+  "$(date +%s)" > "$KR/Default.keyring"
+chmod 600 "$KR/Default.keyring"
+printf 'Default\n' > "$KR/default"
+warn "wrote fresh unencrypted Default keyring and default pointer"
+
+if pgrep -u "$USER" -f 'gnome-keyring-daemon' >/dev/null 2>&1; then
+  gnome-keyring-daemon -r >/dev/null 2>&1 \
+    && warn "keyring daemon restarted in place" \
+    || warn "daemon restart failed; healed state applies next login"
+fi
+
+if files_ok; then
+  log "heal-keyring: default keyring restored"
+  exit 0
+fi
+warn "files still unhealthy after heal — healed state applies next login"
+exit 0
