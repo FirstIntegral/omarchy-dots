@@ -10,7 +10,7 @@
 #   3. drift-check pack files vs ~/.config targets
 #   4. drift → ./apply.sh (hypr + theme/font + default wallpaper)
 #
-# Does not touch shell.json, plugins, or agentic-OpenTabletDriver.
+# Does not touch plugins or agentic-OpenTabletDriver.
 #
 # Exit codes:
 #   0   up to date (no drift), or applied successfully
@@ -86,6 +86,7 @@ pairs=(
   "hypr/input.lua:$HOME_CONFIG/hypr/input.lua"
   "chromium/chromium-flags.conf:$HOME_CONFIG/chromium-flags.conf"
   "omarchy/defaults/agent:$HOME_CONFIG/omarchy/defaults/agent"
+  "omarchy/shell.json:$HOME_CONFIG/omarchy/shell.json"
   "local-bin/omarchy-screensaver:$HOME/.local/bin/omarchy-screensaver"
   "omarchy/hooks/repin-wallpaper:$HOME_CONFIG/omarchy/hooks/theme-set.d/repin-wallpaper"
   "omarchy/hooks/repin-wallpaper:$HOME_CONFIG/omarchy/hooks/post-boot.d/repin-wallpaper"

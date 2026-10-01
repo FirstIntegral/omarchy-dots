@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Apply this Omarchy config pack to the current user on this machine.
 # Playbook: README.md. Never writes /usr/share/omarchy or hypr/monitors.lua.
-# Does not install plugins, does not touch shell.json, does not touch
-# agentic-OpenTabletDriver or ~/.config/OpenTabletDriver.
+# Installs the packed bar layout (omarchy/shell.json). Does not install
+# plugins, does not touch agentic-OpenTabletDriver or ~/.config/OpenTabletDriver.
 
 set -euo pipefail
 
@@ -45,6 +45,7 @@ for req in \
   "$ROOT/hypr/input.lua" \
   "$ROOT/chromium/chromium-flags.conf" \
   "$ROOT/omarchy/defaults/agent" \
+  "$ROOT/omarchy/shell.json" \
   "$ROOT/local-bin/omarchy-screensaver" \
   "$ROOT/source.json"
 do
@@ -82,6 +83,7 @@ copy_files=(
   "hypr/input.lua:${HYPR_DIR}/input.lua"
   "chromium/chromium-flags.conf:${HOME_CONFIG}/chromium-flags.conf"
   "omarchy/defaults/agent:${OMARCHY_DIR}/defaults/agent"
+  "omarchy/shell.json:${OMARCHY_DIR}/shell.json"
   "local-bin/omarchy-screensaver:${LOCAL_BIN_DIR}/omarchy-screensaver"
   "omarchy/hooks/repin-wallpaper:${OMARCHY_DIR}/hooks/theme-set.d/repin-wallpaper"
   "omarchy/hooks/repin-wallpaper:${OMARCHY_DIR}/hooks/post-boot.d/repin-wallpaper"
@@ -108,7 +110,6 @@ plan() {
   log "  backup overwritten files under ~/.config/omarchy-dots-backup.<timestamp>/"
   log "  never touch ~/.config/hypr/monitors.lua"
   log "  never touch /usr/share/omarchy/"
-  log "  never touch ~/.config/omarchy/shell.json"
   log "  never touch ~/.config/omarchy/plugins/"
   log "  never touch ~/.config/OpenTabletDriver/ (agentic-OpenTabletDriver)"
   local pair from to
@@ -212,5 +213,5 @@ log ""
 log "DONE. Next:"
 log "  1. Set monitors on THIS machine (Super+Space → Setup → Monitors). Do not copy another box's monitors.lua."
 log "  2. Fingerprint reader?  omarchy setup security fingerprint"
-log "  3. Plugins (Vigil, tray), bar layout, and agentic-OpenTabletDriver are not this pack."
+log "  3. Plugins (Vigil, tray) and agentic-OpenTabletDriver are not this pack."
 log "  4. Agents brain is separate: clone FirstIntegral/1config to ~/.agents && bash ~/.agents/setup.sh"

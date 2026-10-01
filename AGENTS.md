@@ -17,7 +17,7 @@ This is not a software project to extend. There is no `session_compact.md`. Do n
 - Do **not** write `/usr/share/omarchy/`.
 - Do **not** rsync all of `~/.config` or `$HOME`.
 - Do **not** run `omarchy refresh` / `omarchy reinstall configs`.
-- Do **not** write `~/.config/omarchy/shell.json` or `~/.config/omarchy/plugins/`.
+- Do **not** write `~/.config/omarchy/plugins/`. Bar layout is packed (`omarchy/shell.json`) and lands only via `./apply.sh`.
 - Do **not** `omarchy plugin add` / `enable` / `remove`.
 - Do **not** write `~/.config/OpenTabletDriver/` or install stock OpenTabletDriver. Tablet is `~/Projects/agentic-OpenTabletDriver` (that XDG dir and the `opentabletdriver` user unit stay the fork's).
 - Do **not** force-push `main`. Do **not** `curl | sh`.

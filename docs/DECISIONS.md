@@ -1,5 +1,11 @@
 # Decisions & Rationale (ADRs)
 
+## 2026-10-02 Bar layout packed again; omarchy.menu logo removed
+- Reverses the 2026-09-19 "No shell.json" ADR. The user wants the bar layout to ship with the pack, so `omarchy/shell.json` (the full live file) joins `apply.sh` copy_files and `sync.sh` drift pairs.
+- Live bar left section was `[omarchy.workspaces, omarchy.menu]` (stock default puts `omarchy.menu` before workspaces; this machine had drifted). The user wants the logo gone entirely: left section is now `omarchy.workspaces` only.
+- Ships idle settings too (`screensaver` 600, `lock` 31536000 = effectively never). Bar layout references `brwsk.tray` / `brwsk.vigil`; the pack still never installs plugins (2026-09-19 rule) — apply.sh keeps printing the `omarchy plugin add` note for missing ones, and the widgets just do not render until installed.
+- Rejected: keeping the bar local (explicit request). Rejected: shipping only a layout fragment (whole-file contract matches every other pack file and the drift classifier). Rejected: moving the logo back before the workspaces (user asked for removal, not repositioning).
+
 ## 2026-09-05 Curated private pack, not whole ~/.config
 - Ship only files that diverge from Omarchy stock and are portable across machines.
 - Rejected: rsync of all `~/.config` (Chromium profiles, tokens, fcitx, machine churn).

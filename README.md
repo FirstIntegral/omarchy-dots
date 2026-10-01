@@ -4,7 +4,7 @@ Public pack of **portable** Omarchy desktop config. Another machine clones this 
 
 This file is the apply playbook. An AI on the destination machine should read **this README** and run `./apply.sh`. Do not invent a different copy. Do not rsync `$HOME`.
 
-Appearance and shortcuts only. Bar layout, plugins, and the tablet driver stay on the machine that owns them. The driver is **agentic-OpenTabletDriver** (`~/Projects/agentic-OpenTabletDriver`, `FirstIntegral/agentic-OpenTabletDriver`), not the stock OpenTabletDriver package.
+Appearance, shortcuts, and bar layout. Plugins and the tablet driver stay on the machine that owns them. The driver is **agentic-OpenTabletDriver** (`~/Projects/agentic-OpenTabletDriver`, `FirstIntegral/agentic-OpenTabletDriver`), not the stock OpenTabletDriver package.
 
 ## For the applying AI
 
@@ -17,7 +17,7 @@ You are on the **destination** Omarchy box. This is a config pack, not a softwar
 - Do **not** rsync or copy all of `~/.config` or `$HOME`.
 - Do **not** run `omarchy refresh`, `omarchy refresh hyprland`, `omarchy refresh shell`, or `omarchy reinstall configs`. Those reset to stock.
 - Do **not** invent a copy. `./apply.sh` is the only mutation path.
-- Do **not** write `~/.config/omarchy/shell.json`. Bar layout is local.
+- Do **not** hand-write `~/.config/omarchy/shell.json`. The bar layout ships in the pack (`omarchy/shell.json`) and lands only via `./apply.sh`.
 - Do **not** write `~/.config/omarchy/plugins/`. Plugins (Vigil, tray, …) are not this pack.
 - Do **not** write `~/.config/OpenTabletDriver/` and do **not** install or enable the stock `opentabletdriver` package. The pen is `~/Projects/agentic-OpenTabletDriver`. The fork still uses that XDG config dir and the `opentabletdriver` user unit. This pack does not install either.
 - Do **not** `omarchy plugin add` / `enable` / `remove`.
@@ -46,7 +46,7 @@ cd ~/Projects/omarchy-dots
 1. Refuse root, refuse missing `omarchy`, refuse if `hypr/monitors.lua` is in the pack.
 2. Warn on Omarchy version mismatch vs `source.json`. Same major 4.x continues; other majors abort.
 3. Copy overwritten files to `~/.config/omarchy-dots-backup.<timestamp>/`.
-4. Install the files in the table below. Never touches `monitors.lua`, `shell.json`, plugins, or agentic-OpenTabletDriver (including `~/.config/OpenTabletDriver/`).
+4. Install the files in the table below. Never touches `monitors.lua`, plugins, or agentic-OpenTabletDriver (including `~/.config/OpenTabletDriver/`).
 5. `OMARCHY_THEME_SKIP_BACKGROUND=1 omarchy theme set "Osaka Jade"` and `omarchy font set "JetBrainsMono Nerd Font"`. Theme set normally **rotates** the wallpaper; the skip stops that. If the live background is not the file named in `source.json`, apply then runs `omarchy theme bg set` on that file.
 6. `hyprctl reload` (if Hyprland is running) then `hyprctl configerrors`.
 
@@ -73,7 +73,7 @@ Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead
 
 1. Set monitors on **this** machine. Do not copy another box's `monitors.lua`.
 2. Fingerprint reader? `omarchy setup security fingerprint` — do not copy PAM files.
-3. Confirm: `omarchy theme current`, `hyprctl configerrors`. Plugins and the bar are unchanged.
+3. Confirm: `omarchy theme current`, `hyprctl configerrors`. Plugins are unchanged.
 
 ## What lands
 
@@ -84,19 +84,19 @@ Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead
 | `hypr/input.lua` | `~/.config/hypr/input.lua` (pointer sensitivity; Hyprland ignores the G930L kernel HID so agentic-OpenTabletDriver can own the pen) |
 | `chromium/chromium-flags.conf` | `~/.config/chromium-flags.conf` (pins `--password-store=basic`) |
 | `omarchy/defaults/agent` | `~/.config/omarchy/defaults/agent` (`opencode`) |
+| `omarchy/shell.json` | `~/.config/omarchy/shell.json` (bar layout, idle; left section is workspaces only, no `omarchy.menu` logo) |
 | `local-bin/omarchy-screensaver` | `~/.local/bin/omarchy-screensaver` (matrix-only screensaver) |
 | `omarchy/hooks/repin-wallpaper` | `~/.config/omarchy/hooks/theme-set.d/repin-wallpaper` and `post-boot.d/repin-wallpaper` |
 
 Also: Osaka Jade + JetBrainsMono Nerd Font, and the **default wallpaper** pinned by name in `source.json` (`wallpaper`, currently `28-jade-bamboo-path.jpg`). The image files are **not** in this pack and are **not** copied into `~/.config`. They belong to `FirstIntegral/omarchy-wallpapers` (`~/Projects/omarchy-wallpapers/backgrounds/`). Omarchy's cycle list is symlinks only: `~/.config/omarchy/backgrounds/<theme>/` → those files. The live selection is one symlink, `~/.local/state/omarchy/current/background`, aimed at the project file. On a machine without the wallpapers project cloned, apply and sync skip the pin with a note.
 
-**Plugins** are never installed by this pack (hard rule). `source.json` lists which plugins belong on this setup (`plugins`); apply prints a note with the exact `omarchy plugin add` command for any that are missing. Install by hand, on your own confirmation.
+**Plugins** are never installed by this pack (hard rule). `source.json` lists which plugins belong on this setup (`plugins`); apply prints a note with the exact `omarchy plugin add` command for any that are missing. Install by hand, on your own confirmation. The packed bar layout references `brwsk.tray` and `brwsk.vigil`; on a machine without those plugins the widgets simply do not render until installed.
 
 Chromium pins `--password-store=basic` because a corrupted gnome-keyring (this box gets `invalid or unrecognized format` after some updates) makes Chromium mint a fresh storage key and silently log out of every site.
 
 ## What stays out
 
 - `hypr/monitors.lua` — per machine
-- `omarchy/shell.json` — bar layout, idle, plugin widget ids
 - `~/.config/omarchy/plugins/` — Vigil, tray, anything else
 - agentic-OpenTabletDriver — fork daemon, settings in `~/.config/OpenTabletDriver/`, systemd drop-in on the `opentabletdriver` user unit. Do not install stock OpenTabletDriver.
 - Chromium profiles, tokens, fcitx (the one Chromium file in the pack is `chromium-flags.conf`)
@@ -105,7 +105,7 @@ Chromium pins `--password-store=basic` because a corrupted gnome-keyring (this b
 
 ## Updating the pack (source machine)
 
-When portable config changes on the source box, copy the changed files into this repo (still no `monitors.lua` / `shell.json` / plugins / agentic-OpenTabletDriver), commit, push. Destination: `git pull && ./apply.sh`.
+When portable config changes on the source box, copy the changed files into this repo (still no `monitors.lua` / plugins / agentic-OpenTabletDriver), commit, push. Destination: `git pull && ./apply.sh`.
 
 ## Repo
 
