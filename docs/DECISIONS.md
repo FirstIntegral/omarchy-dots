@@ -1,5 +1,12 @@
 # Decisions & Rationale (ADRs)
 
+## 2026-10-04 sync.sh re-execs after a fast-forward
+- Boot 2026-10-04 00:50 fast-forwarded `06df758` → `3d32d32` (bar layout, heal-keyring, machine map) and still exited 0 with the desktop on the old bar. `~/.config/omarchy/shell.json` stayed the 2026-09-30 file. `heal-keyring` was not installed.
+- Cause: `sync.sh` pulled a new `sync.sh` and kept running. Bash reads the script inode it opened. The pre-pull script (`06df758`) does not touch `shell.json`, its watched files matched, so it reported in sync. The dashboard row was green because that process really exited 0.
+- Fix: after a successful fast-forward, `exec bash "$ROOT/sync.sh"`. The new process fetches again, sees behind=0, and runs the pulled drift list. No loop.
+- Rejected: teaching the 1config dashboard to run `sync.sh` twice. The script is also run by hand; the caller is the wrong place. Rejected: `hash -r` / sourcing the new file (bash does not re-read the already-open script). Rejected: applying from the old script by guessing which files the new one cares about.
+- Same turn, `./apply.sh` installed the already-fetched pack onto this machine (live files matched `3d32d32` before this commit). That overwrote the 2026-09-30 bar (screensaver 300s, transparent bar, menu logo, Vigil `iconOnly: false`). Backup: `~/.config/omarchy-dots-backup.20261004-010524/`.
+
 ## 2026-10-02 Keyring prompt loop fixed: park unreadable keyrings, promote healthy Default
 - Symptom: every Grok Bot or ProtonVPN open popped "Choose password for new keyring"; answering it (empty password) created yet another numbered keyring, and the prompt returned after the next login.
 - Root cause: three old keyring files (`Default.keyring`, `Default_keyring.keyring`, `Default_Keyring.keyring`) were unreadable to the daemon — every boot logs `keyring was in an invalid or unrecognized format` for exactly those three. They squatted the canonical names while `~/.local/share/keyrings/default` pointed at `Default`, so the daemon dropped the default collection; any libsecret-using app (Electron safeStorage in Grok Bot and ProtonVPN) then triggered the CreateCollection prompt. Each answer created a numbered file (`Default_1`, `Default_Keyring_N`) but the pointer kept resolving to the squatted name — loop.

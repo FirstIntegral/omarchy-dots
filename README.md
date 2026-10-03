@@ -58,7 +58,7 @@ cd ~/Projects/omarchy-dots
 bash ~/Projects/omarchy-dots/sync.sh
 ```
 
-It fetches `origin/main` (validated remote, BatchMode, ff-only), pulls if behind, then drift-checks pack files against live targets. Drift is classified per file, using a machine-local state file at `~/.local/state/omarchy-dots/sync-state`:
+It fetches `origin/main` (validated remote, BatchMode, ff-only), pulls if behind, then re-execs itself and drift-checks pack files against live targets. The re-exec matters: bash keeps reading the script file it already opened, so a pull that changes `sync.sh` would otherwise finish the login on the old drift list. Drift is classified per file, using a machine-local state file at `~/.local/state/omarchy-dots/sync-state`:
 
 - **missing / incoming** (pack moved, live untouched, or first run) → runs `./apply.sh`
 - **local edit** (pack unchanged, live edited) or **both changed** → nothing applied, exit `5`, with per-file instructions (copy the live files into the pack and push, or run `apply.sh` to force the pack)

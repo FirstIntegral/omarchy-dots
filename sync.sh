@@ -7,6 +7,8 @@
 # Flow:
 #   1. fetch origin/main (validated remote only)
 #   2. if local repo behind → fast-forward pull (never over local edits, never over unpushed commits)
+#      then re-exec this script. Bash keeps reading the file it opened, so without
+#      the re-exec a pull that changes the drift list finishes on the old list.
 #   3. drift-check pack files vs ~/.config targets
 #   4. drift → ./apply.sh (hypr + theme/font + default wallpaper)
 #
@@ -77,6 +79,11 @@ if [ "$behind" -gt 0 ]; then
     exit 4
   fi
   echo "dots-sync: fast-forwarded $behind commit(s) → matches origin/$BRANCH"
+  # This process is still the pre-pull script. The pull may have replaced the
+  # drift list (that is how shell.json and heal-keyring were skipped on
+  # 2026-10-04). Re-exec so this login runs the script just pulled.
+  # The new process fetches again, sees behind=0, and does not re-exec.
+  exec bash "$ROOT/sync.sh"
 fi
 
 # ── drift check: pack files vs live targets ────────────────────────────────
