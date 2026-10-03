@@ -21,3 +21,10 @@ This is not a software project to extend. There is no `session_compact.md`. Do n
 - Do **not** `omarchy plugin add` / `enable` / `remove`.
 - Do **not** write `~/.config/OpenTabletDriver/` or install stock OpenTabletDriver. Tablet is `~/Projects/agentic-OpenTabletDriver` (that XDG dir and the `opentabletdriver` user unit stay the fork's).
 - Do **not** force-push `main`. Do **not** `curl | sh`.
+
+## Machine map
+
+`MACHINE.md` + `packages/` = app inventory + install quirks for this box (docs only,
+never applied by `apply.sh`/`sync.sh`). When you install/remove/re-source an app:
+add a line to `MACHINE.md` in the same turn, regenerate the lists (commands in
+`packages/README.md`), commit.

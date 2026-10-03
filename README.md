@@ -97,6 +97,13 @@ Also: Osaka Jade + JetBrainsMono Nerd Font, and the **default wallpaper** pinned
 
 Chromium pins `--password-store=basic` because a corrupted gnome-keyring (this box gets `invalid or unrecognized format` after some updates) makes Chromium mint a fresh storage key and silently log out of every site.
 
+## Machine map (source box only)
+
+`MACHINE.md` + `packages/` document **what is installed on the source machine and why**:
+app map with install quirks, and regenerated package lists. Per-machine like
+`monitors.lua`. `apply.sh` and `sync.sh` never touch these files — they are
+documentation, not pack content.
+
 ## What stays out
 
 - `hypr/monitors.lua` — per machine
