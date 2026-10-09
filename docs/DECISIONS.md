@@ -1,5 +1,11 @@
 # Decisions & Rationale (ADRs)
 
+## 2026-10-09 Pack the live bar, including 1config and brwsk.brain
+- The live `~/.config/omarchy/shell.json` had drifted from the pack: `brwsk.vigil` gained `iconOnly: false`, and `brwsk.brain` plus `firstintegral.1config` sat on the right. Login `sync.sh` classified that as a local edit and applied nothing.
+- The pack file is now that live file. Right side order: `brwsk.tray`, `brwsk.vigil`, `brwsk.brain`, `firstintegral.1config`, then the stock agents / bluetooth / network / audio / power / monitor widgets.
+- The pack still does not install plugins. `brwsk.brain` is the grokbot-brain tracker. `firstintegral.1config` is 1config's own plugin and is copied by `~/.agents/setup.sh`. A machine without those directories keeps the ids and draws nothing for them.
+- Rejected: packing only `firstintegral.1config` and leaving `brwsk.brain` out (the files would still differ, so login sync would stay on exit 5). Rejected: vendoring either plugin into this repo. Rejected: `apply.sh` as the way to publish the layout (the live file was already the desired layout; copying it into the pack is the edit).
+
 ## 2026-10-04 sync.sh re-execs after a fast-forward
 - Boot 2026-10-04 00:50 fast-forwarded `06df758` → `3d32d32` (bar layout, heal-keyring, machine map) and still exited 0 with the desktop on the old bar. `~/.config/omarchy/shell.json` stayed the 2026-09-30 file. `heal-keyring` was not installed.
 - Cause: `sync.sh` pulled a new `sync.sh` and kept running. Bash reads the script inode it opened. The pre-pull script (`06df758`) does not touch `shell.json`, its watched files matched, so it reported in sync. The dashboard row was green because that process really exited 0.

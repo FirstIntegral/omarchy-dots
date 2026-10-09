@@ -39,7 +39,15 @@
           "id": "brwsk.tray"
         },
         {
-          "id": "brwsk.vigil"
+          "id": "brwsk.vigil",
+          "iconOnly": false
+        },
+        {
+          "id": "brwsk.brain",
+          "iconOnly": false
+        },
+        {
+          "id": "firstintegral.1config"
         },
         {
           "id": "omarchy.agents"
