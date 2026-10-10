@@ -81,7 +81,7 @@ Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead
 
 | Pack path | Lands at |
 |-----------|----------|
-| `hypr/bindings.lua` | `~/.config/hypr/bindings.lua` (SUPER+L lock, SUPER+F files, SUPER+S screenshot) |
+| `hypr/bindings.lua` | `~/.config/hypr/bindings.lua` (SUPER+L lock, SUPER+F files, SUPER+S screenshot, SUPER+T terminal, Ctrl+C/Ctrl+V terminal-aware copy/paste, grokbot-brain menu binds) |
 | `hypr/hyprland.lua` | `~/.config/hypr/hyprland.lua` (prepends `~/.local/bin` to PATH) |
 | `hypr/input.lua` | `~/.config/hypr/input.lua` (pointer sensitivity; Hyprland ignores the G930L kernel HID so agentic-OpenTabletDriver can own the pen) |
 | `chromium/chromium-flags.conf` | `~/.config/chromium-flags.conf` (pins `--password-store=basic`) |

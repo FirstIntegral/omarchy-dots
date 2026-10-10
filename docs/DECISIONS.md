@@ -1,5 +1,12 @@
 # Decisions & Rationale (ADRs)
 
+## 2026-10-10 Terminal moves to SUPER+T; Ctrl+C/Ctrl+V are terminal-aware copy/paste
+- Terminal: was SUPER+RETURN (default `omarchy-launch-terminal`). Now SUPER+T; both SUPER+T (was: toggle window floating/tiling, now unbound) and SUPER+RETURN are unbound first. The old float toggle is not remapped — restore it on a free key if wanted.
+- Ctrl+C / Ctrl+V now copy/paste on the keys themselves. Same terminal detection as Omarchy's universal clipboard bindings (`default/hypr/bindings/clipboard.lua`): terminal tag from `default/hypr/apps/terminals.lua`; terminals get the Ctrl+Insert / Shift+Insert convention, other windows get their native shortcut.
+- Ctrl+C is `non_consuming`: the terminal still receives the interrupt, and a selection is additionally copied. Ctrl+V is consumed (a terminal would otherwise hand the tty a quoted-insert); paste replaces vim's Ctrl+V visual block inside a terminal.
+- grokbot-brain's two binds (SUPER+ALT+B menu, SUPER+ALT+SHIFT+B attention) moved from the live-only file into the pack; the local-edit drift is resolved by folding, not by forcing.
+- Rejected: a plain consuming Ctrl+C (loses SIGINT — a runaway process could not be stopped). Rejected: `wtype`-typed paste (the physically held Ctrl merges into the injected chord; same reason Omarchy uses `send_key_state` with the down/up split). Rejected: foot-only key bindings in `~/.config/foot` (covers foot but not every tagged terminal; the compositor covers all of them, and `apply.sh` does not own foot.ini).
+
 ## 2026-10-09 Pack the live bar, including 1config and brwsk.brain
 - The live `~/.config/omarchy/shell.json` had drifted from the pack: `brwsk.vigil` gained `iconOnly: false`, and `brwsk.brain` plus `firstintegral.1config` sat on the right. Login `sync.sh` classified that as a local edit and applied nothing.
 - The pack file is now that live file. Right side order: `brwsk.tray`, `brwsk.vigil`, `brwsk.brain`, `firstintegral.1config`, then the stock agents / bluetooth / network / audio / power / monitor widgets.

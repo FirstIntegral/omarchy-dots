@@ -4,7 +4,7 @@ Portable Omarchy desktop config pack for Brusk. Public GitHub repo.
 
 **Apply playbook is `README.md`.** Read that file and follow it. `./apply.sh` is the only mutation path. Do not invent a copy.
 
-This is not a software project to extend. There is no `session_compact.md`. Do not invent session state. Do not run `create_project` here.
+This is not a software project to extend. The AI handoff is `session_compact.md` (local only, gitignored; rewrite, never append). Do not invent session state. Do not run `create_project` here.
 
 ## Repo
 
