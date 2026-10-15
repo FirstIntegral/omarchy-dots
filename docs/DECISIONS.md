@@ -1,5 +1,11 @@
 # Decisions & Rationale (ADRs)
 
+## 2026-10-15 grokbot-brain removed
+- Grok Bot re-sends the whole chat on every turn. A compact file and a bar widget do not change that meter. The tracker is deleted: GitHub repo, plugin directory, notes.
+- Bar right side no longer has `brwsk.brain`. Order is `brwsk.tray`, `brwsk.vigil`, `firstintegral.1config`, then the stock widgets.
+- `SUPER+ALT+B` and `SUPER+ALT+SHIFT+B` are unbound. The pack still does not install plugins. This entry is what stops login sync from putting the id and the binds back.
+- Rejected: leaving the bar id so a missing plugin draws nothing. The id is the layout, and the next sync would restore it.
+
 ## 2026-10-10 Terminal moves to SUPER+T; Ctrl+C/Ctrl+V are terminal-aware copy/paste
 - Terminal: was SUPER+RETURN (default `omarchy-launch-terminal`). Now SUPER+T; both SUPER+T (was: toggle window floating/tiling, now unbound) and SUPER+RETURN are unbound first. The old float toggle is not remapped — restore it on a free key if wanted.
 - Ctrl+C / Ctrl+V now copy/paste on the keys themselves. Same terminal detection as Omarchy's universal clipboard bindings (`default/hypr/bindings/clipboard.lua`): terminal tag from `default/hypr/apps/terminals.lua`; terminals get the Ctrl+Insert / Shift+Insert convention, other windows get their native shortcut.

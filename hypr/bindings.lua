@@ -94,7 +94,3 @@ o.bind("CTRL + V", "Paste (terminal aware)", function()
     send_shortcut_once("CTRL", "V")()
   end
 end)
-
--- grokbot-brain menu (terminal + fzf; this Omarchy has no walker/waybar).
-o.bind("SUPER + ALT + B", "Grok Bot brain", "xdg-terminal-exec bash -lc 'BRAIN_HOME=$HOME/Projects/grokbot-brain ~/.local/share/grokbot-brain/omarchy/brain-menu.sh'")
-o.bind("SUPER + ALT + SHIFT + B", "Grok Bot brain attention", "xdg-terminal-exec bash -lc 'BRAIN_HOME=$HOME/Projects/grokbot-brain ~/.local/share/grokbot-brain/omarchy/brain-menu.sh attention'")
