@@ -126,7 +126,8 @@ plan() {
     log "  OMARCHY_THEME_SKIP_BACKGROUND=1 omarchy theme set \"Osaka Jade\""
     log "  omarchy font set \"JetBrainsMono Nerd Font\""
     if [[ -n "$WALLPAPER" ]]; then
-      log "  re-pin wallpaper if needed: $WALLPAPER_FILE"
+      log "  wallpaper list: theme walls + only $WALLPAPER"
+    log "  re-pin wallpaper if needed: $WALLPAPER_FILE"
     fi
   fi
   log "  plugin check: note-only if a listed plugin is missing (never auto-install)"
@@ -191,6 +192,12 @@ if (( ! SKIP_THEME )); then
   omarchy font set "JetBrainsMono Nerd Font" || warn "font set failed"
   if [[ -n "$WALLPAPER" ]]; then
     if [[ -f "$WALLPAPER_FILE" ]]; then
+      # Hook trims the picker to the theme's own walls plus this one file,
+      # then re-pins the live background. Theme set already ran it; run it
+      # again so a skipped hook still leaves the short list.
+      if [[ -x "$OMARCHY_DIR/hooks/theme-set.d/repin-wallpaper" ]]; then
+        "$OMARCHY_DIR/hooks/theme-set.d/repin-wallpaper" osaka-jade || warn "repin-wallpaper failed"
+      fi
       live_bg="$(readlink -f "$HOME/.local/state/omarchy/current/background" 2>/dev/null || true)"
       want_bg="$(readlink -f "$WALLPAPER_FILE")"
       if [[ "$live_bg" != "$want_bg" ]]; then

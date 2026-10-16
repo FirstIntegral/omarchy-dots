@@ -3,8 +3,11 @@
 # Also runs from post-boot, so a login still re-pins when GitHub is unreachable
 # and dots sync bails before its drift check.
 #
-# Image files stay in ~/Projects/omarchy-wallpapers. This script only points
-# the Omarchy current-background symlink at one of them.
+# Image files stay in ~/Projects/omarchy-wallpapers. This script points the
+# Omarchy current-background symlink at the one default, and leaves only that
+# one catalog symlink in the theme's user-backgrounds folder. The picker then
+# shows the theme's own walls plus this default. The rest of the catalog stays
+# out of the cycle list.
 #
 # theme-set passes the snake-cased theme slug as $1. post-boot passes nothing.
 # A different theme is left alone.
@@ -24,8 +27,27 @@ if [ -n "$slug" ] && [ "$slug" != "$want_slug" ]; then
   exit 0
 fi
 
-file="$HOME/Projects/omarchy-wallpapers/backgrounds/$name"
+catalog="$HOME/Projects/omarchy-wallpapers/backgrounds"
+file="$catalog/$name"
 [ -f "$file" ] || exit 0
+
+# Picker reads ~/.config/omarchy/backgrounds/<theme>/ on top of the theme's
+# own walls. Drop every other symlink that points into the catalog. Real files
+# and links that point somewhere else stay.
+dest="$HOME/.config/omarchy/backgrounds/$want_slug"
+mkdir -p "$dest"
+shopt -s nullglob
+for link in "$dest"/*; do
+  [ -L "$link" ] || continue
+  target="$(readlink "$link" || true)"
+  case "$target" in
+    "$catalog"/*)
+      [ "$(basename "$link")" = "$name" ] && continue
+      rm -f -- "$link"
+      ;;
+  esac
+done
+ln -sfn "$file" "$dest/$name"
 
 live="$(readlink -f "$HOME/.local/state/omarchy/current/background" 2>/dev/null || true)"
 want="$(readlink -f "$file")"
