@@ -1,5 +1,10 @@
 # Decisions & Rationale (ADRs)
 
+## 2026-10-18 This machine's bar stays transparent; key order stays the 4.0.5 writer
+- This box is still omarchy 4.0.4-1. The 4.0.5 update is not installed here. The pack's alphabetical `shell.json` and the Chromium `--no-default-browser-check` line came from the machine that already updated. Login sync applied nothing: this machine's `shell.json` had moved too (`bar.transparent` true since 2026-10-16 17:13, and the pre-update key order).
+- Pack `omarchy/shell.json` keeps that 4.0.5 key order and now says `transparent: true`. `./apply.sh --skip-theme` installed it here, plus the Chromium flag that was incoming. Theme and wallpaper were not touched. A sorted file round-trips through `JSON.stringify`, so the update's rewrite does not look like a new local edit. Migration `1791935188` appends the Chromium flag only when it is absent.
+- Rejected: applying `transparent: false` (turns this bar opaque). Rejected: putting this machine's pre-update key order back into the pack (the other machine is already on the sorted file; the next update here would sort again and the slip would return). Rejected: waiting for the update to clear the slip (the writer keeps the boolean, so true vs false would still exit 5).
+
 ## 2026-10-18 Pack shell.json in the order Omarchy writes
 - Same update (omarchy 4.0.4-1 → 4.0.5-1, 18:24) rewrote `~/.config/omarchy/shell.json` at 18:29. `json.load` of the pack file and the live file compare equal. Every object key is alphabetical. Bar ids, `iconOnly`, idle (`screensaver` 600, `lock` 31536000), and `plugins: []` are unchanged. `sync.sh` hashes bytes, so it called this a local edit.
 - Pack file is now those live bytes. The shell persists with `JSON.stringify` (`shell.qml` `persistShellConfig`). A sorted file round-trips sorted. Putting the old key order back would make the next save drift again.
