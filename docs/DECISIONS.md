@@ -1,5 +1,10 @@
 # Decisions & Rationale (ADRs)
 
+## 2026-10-18 Absorb Omarchy's `--no-default-browser-check`
+- Omarchy 4.0.5-1 migration `1791935188` appended `--no-default-browser-check` to every existing `~/.config/*-flags.conf`. On this machine that touched `chromium-flags.conf` (and `chrome-flags.conf`, which is not in the pack). Login `sync.sh` saw the pack hash unchanged and the live file moved, so it classified a local edit and applied nothing. The boot slip named that file.
+- Pack `chromium/chromium-flags.conf` now matches the live file: the migration's flag, and `--password-store=basic` from 2026-09-14. Stock `/usr/share/omarchy/config/chromium-flags.conf` has the new flag too, but still says `--password-store=gnome-libsecret`. The migration only appends; it did not replace the password-store line.
+- Rejected: `./apply.sh` to force the old pack (drops the flag; the next update appends it again and the slip returns). Rejected: copying the stock file (puts `gnome-libsecret` back; keyring corruption still logs Chromium out). Rejected: packing `chrome-flags.conf` (it already matches stock byte for byte; this pack still ships only the Chromium file).
+
 ## 2026-10-15 grokbot-brain removed
 - Grok Bot re-sends the whole chat on every turn. A compact file and a bar widget do not change that meter. The tracker is deleted: GitHub repo, plugin directory, notes.
 - Bar right side no longer has `brwsk.brain`. Order is `brwsk.tray`, `brwsk.vigil`, `firstintegral.1config`, then the stock widgets.
