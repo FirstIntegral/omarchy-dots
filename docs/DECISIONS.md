@@ -1,5 +1,11 @@
 # Decisions & Rationale (ADRs)
 
+## 2026-10-18 Pack shell.json in the order Omarchy writes
+- Same update (omarchy 4.0.4-1 → 4.0.5-1, 18:24) rewrote `~/.config/omarchy/shell.json` at 18:29. `json.load` of the pack file and the live file compare equal. Every object key is alphabetical. Bar ids, `iconOnly`, idle (`screensaver` 600, `lock` 31536000), and `plugins: []` are unchanged. `sync.sh` hashes bytes, so it called this a local edit.
+- Pack file is now those live bytes. The shell persists with `JSON.stringify` (`shell.qml` `persistShellConfig`). A sorted file round-trips sorted. Putting the old key order back would make the next save drift again.
+- During the update, one `sync.sh` run also saw theme Tokyo Night and a wallpaper miss. A later read was Osaka Jade and `28-jade-bamboo-path.jpg`. Those were not packed.
+- Rejected: `./apply.sh` (overwrites the writer's order and can theme-set). Rejected: teaching `sync.sh` to compare JSON semantically (hides a real settings edit that happens to share a hash-unstable file).
+
 ## 2026-10-18 Absorb Omarchy's `--no-default-browser-check`
 - Omarchy 4.0.5-1 migration `1791935188` appended `--no-default-browser-check` to every existing `~/.config/*-flags.conf`. On this machine that touched `chromium-flags.conf` (and `chrome-flags.conf`, which is not in the pack). Login `sync.sh` saw the pack hash unchanged and the live file moved, so it classified a local edit and applied nothing. The boot slip named that file.
 - Pack `chromium/chromium-flags.conf` now matches the live file: the migration's flag, and `--password-store=basic` from 2026-09-14. Stock `/usr/share/omarchy/config/chromium-flags.conf` has the new flag too, but still says `--password-store=gnome-libsecret`. The migration only appends; it did not replace the password-store line.
