@@ -7,6 +7,9 @@
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "$0")" && pwd)
+DOTS_ROOT="$ROOT"
+# shellcheck disable=SC1091
+. "$ROOT/omarchy/wallpaper.sh"
 DRY_RUN=0
 SKIP_THEME=0
 BACKUP_ROOT=""
@@ -47,6 +50,7 @@ for req in \
   "$ROOT/omarchy/defaults/agent" \
   "$ROOT/omarchy/shell.json" \
   "$ROOT/omarchy/hooks/heal-keyring" \
+  "$ROOT/omarchy/wallpaper.sh" \
   "$ROOT/local-bin/omarchy-screensaver" \
   "$ROOT/source.json"
 do
@@ -72,11 +76,15 @@ HYPR_DIR="$HOME_CONFIG/hypr"
 OMARCHY_DIR="$HOME_CONFIG/omarchy"
 LOCAL_BIN_DIR="$HOME/.local/bin"
 
-# Default wallpaper lives in the omarchy-wallpapers project, not in this pack.
-# source.json pins the file name; the image itself is owned by that repo.
-WALLPAPER="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("wallpaper",""))' "$ROOT/source.json" 2>/dev/null || true)"
-WALLPAPER_DIR="$HOME/Projects/omarchy-wallpapers/backgrounds"
-WALLPAPER_FILE="$WALLPAPER_DIR/$WALLPAPER"
+# Theme name, font, and wallpaper filename come from source.json.
+# Image bytes stay in the theme repo or the wallpapers catalog, not here.
+THEME="$(dots_json_get theme)"
+FONT="$(dots_json_get font)"
+WALLPAPER="$(dots_json_get wallpaper)"
+THEME_REPO="$(dots_json_get theme_repo)"
+THEME_SLUG="$(dots_theme_slug "$THEME")"
+WALLPAPER_FILE="$(dots_resolve_wallpaper "$WALLPAPER" "$THEME_SLUG" || true)"
+[ -n "$THEME" ] || die "source.json has no theme"
 
 copy_files=(
   "hypr/bindings.lua:${HYPR_DIR}/bindings.lua"
@@ -123,11 +131,15 @@ plan() {
   if (( SKIP_THEME )); then
     log "  theme/font: skipped"
   else
-    log "  OMARCHY_THEME_SKIP_BACKGROUND=1 omarchy theme set \"Osaka Jade\""
-    log "  omarchy font set \"JetBrainsMono Nerd Font\""
+    log "  OMARCHY_THEME_SKIP_BACKGROUND=1 omarchy theme set \"$THEME\""
+    log "  omarchy font set \"$FONT\""
     if [[ -n "$WALLPAPER" ]]; then
-      log "  wallpaper list: theme walls + only $WALLPAPER"
-    log "  re-pin wallpaper if needed: $WALLPAPER_FILE"
+      if [[ -n "$WALLPAPER_FILE" ]]; then
+        log "  re-pin wallpaper if the live file is not $WALLPAPER"
+        log "    $WALLPAPER_FILE"
+      else
+        log "  wallpaper $WALLPAPER not found (theme or catalog) — pin skipped"
+      fi
     fi
   fi
   log "  plugin check: note-only if a listed plugin is missing (never auto-install)"
@@ -185,28 +197,52 @@ if [ -x "$OMARCHY_DIR/hooks/post-boot.d/heal-keyring" ]; then
 fi
 
 if (( ! SKIP_THEME )); then
-  # theme set rotates the background (and the project-path symlink never matches
-  # the config symlink list, so it jumps to the first image). Skip that.
+  # theme set rotates the background (the staged copy's path never matches
+  # find's list, so it jumps to the first image). Skip that.
   # The theme-set hook re-pins too, in case something else calls theme set.
-  OMARCHY_THEME_SKIP_BACKGROUND=1 omarchy theme set "Osaka Jade" || warn "theme set failed"
-  omarchy font set "JetBrainsMono Nerd Font" || warn "font set failed"
+  user_theme="$OMARCHY_DIR/themes/$THEME_SLUG"
+  stock_theme="/usr/share/omarchy/themes/$THEME_SLUG"
+  if [[ ! -d $user_theme && ! -d $stock_theme ]]; then
+    checkout="$HOME/Projects/starship-theme"
+    if [[ -f $checkout/colors.toml ]]; then
+      mkdir -p "$user_theme"
+      rsync -a \
+        --exclude=.git \
+        --exclude=AGENTS.md \
+        --exclude=docs \
+        --exclude=session_compact.md \
+        --exclude=session_transcript.md \
+        --exclude=notes.allow \
+        --exclude=.gitignore \
+        "$checkout/" "$user_theme/"
+      log "installed theme from $checkout"
+      WALLPAPER_FILE="$(dots_resolve_wallpaper "$WALLPAPER" "$THEME_SLUG" || true)"
+    else
+      warn "theme '$THEME' is not installed. Clone ${THEME_REPO:-the theme repo} to $checkout and re-run. Not switching to another theme."
+    fi
+  fi
+  if [[ -d $user_theme || -d $stock_theme ]]; then
+    OMARCHY_THEME_SKIP_BACKGROUND=1 omarchy theme set "$THEME" || warn "theme set failed"
+  else
+    warn "skipped theme set: '$THEME' not installed"
+  fi
+  if [[ -n "$FONT" ]]; then
+    omarchy font set "$FONT" || warn "font set failed"
+  fi
   if [[ -n "$WALLPAPER" ]]; then
-    if [[ -f "$WALLPAPER_FILE" ]]; then
-      # Hook trims the picker to the theme's own walls plus this one file,
-      # then re-pins the live background. Theme set already ran it; run it
-      # again so a skipped hook still leaves the short list.
+    if [[ -n "$WALLPAPER_FILE" && -f "$WALLPAPER_FILE" ]]; then
+      # Theme-owned photo: hook only re-pins. Catalog photo: hook also
+      # trims the picker down to the theme walls plus this one file.
       if [[ -x "$OMARCHY_DIR/hooks/theme-set.d/repin-wallpaper" ]]; then
-        "$OMARCHY_DIR/hooks/theme-set.d/repin-wallpaper" osaka-jade || warn "repin-wallpaper failed"
+        "$OMARCHY_DIR/hooks/theme-set.d/repin-wallpaper" "$THEME_SLUG" || warn "repin-wallpaper failed"
       fi
-      live_bg="$(readlink -f "$HOME/.local/state/omarchy/current/background" 2>/dev/null || true)"
-      want_bg="$(readlink -f "$WALLPAPER_FILE")"
-      if [[ "$live_bg" != "$want_bg" ]]; then
-        omarchy theme bg set "$WALLPAPER_FILE" || warn "wallpaper set failed"
-      else
+      if dots_wallpaper_current "$WALLPAPER"; then
         log "wallpaper already $WALLPAPER"
+      else
+        omarchy theme bg set "$WALLPAPER_FILE" || warn "wallpaper set failed"
       fi
     else
-      warn "wallpaper '$WALLPAPER' not found — clone omarchy-wallpapers to $WALLPAPER_DIR/.."
+      warn "wallpaper '$WALLPAPER' not found in the installed theme, ~/Projects/starship-theme, or ~/Projects/omarchy-wallpapers"
     fi
   fi
 fi

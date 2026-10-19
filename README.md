@@ -47,7 +47,7 @@ cd ~/Projects/omarchy-dots
 2. Warn on Omarchy version mismatch vs `source.json`. Same major 4.x continues; other majors abort.
 3. Copy overwritten files to `~/.config/omarchy-dots-backup.<timestamp>/`.
 4. Install the files in the table below. Never touches `monitors.lua`, plugins, or agentic-OpenTabletDriver (including `~/.config/OpenTabletDriver/`).
-5. `OMARCHY_THEME_SKIP_BACKGROUND=1 omarchy theme set "Osaka Jade"` and `omarchy font set "JetBrainsMono Nerd Font"`. Theme set normally **rotates** the wallpaper; the skip stops that. If the live background is not the file named in `source.json`, apply then runs `omarchy theme bg set` on that file.
+5. `OMARCHY_THEME_SKIP_BACKGROUND=1 omarchy theme set` of the theme named in `source.json` (currently **Starship Celebration**) and `omarchy font set` of the font named there (currently JetBrainsMono Nerd Font). Theme set normally **rotates** the wallpaper; the skip stops that. If the live background's filename is not the one in `source.json`, apply then runs `omarchy theme bg set` on the resolved file. A missing custom theme is copied from `~/Projects/starship-theme` when that checkout exists. Apply does not clone it, and it does not fall back to another theme.
 6. `hyprctl reload` (if Hyprland is running) then `hyprctl configerrors`.
 
 ### Boot sync
@@ -65,7 +65,7 @@ It fetches `origin/main` (validated remote, BatchMode, ff-only), pulls if behind
 
 Wallpaper-only drift does **not** run apply (that would theme-set); it re-pins with `omarchy theme bg set`. Local repo edits are never touched.
 
-Login also runs `repin-wallpaper` from `post-boot` (about two seconds after Hyprland starts) and again after every `theme set` of Osaka Jade. That re-pin does not need GitHub. If the wallpapers repo is not cloned, it no-ops.
+Login also runs `repin-wallpaper` from `post-boot` (about two seconds after Hyprland starts) and again after every `theme set` of the packed theme. That re-pin does not need GitHub. It no-ops when the pinned file cannot be resolved, and when the live background already has that filename.
 
 Login also runs `heal-keyring` from `post-boot`: if the Secret Service default keyring is broken (unreadable files squatting the `Default` name — the "Choose password for new keyring" loop in Electron apps), it parks the unreadable files, writes a fresh unencrypted default keyring, and restarts the keyring daemon in place. No-op when healthy.
 
@@ -91,9 +91,9 @@ Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead
 | `omarchy/hooks/repin-wallpaper` | `~/.config/omarchy/hooks/theme-set.d/repin-wallpaper` and `post-boot.d/repin-wallpaper` |
 | `omarchy/hooks/heal-keyring` | `~/.config/omarchy/hooks/post-boot.d/heal-keyring` (fixes a broken Secret Service default keyring at every login; also runs once during apply) |
 
-Also: Osaka Jade + JetBrainsMono Nerd Font, and the **default wallpaper** pinned by name in `source.json` (`wallpaper`, currently `28-jade-bamboo-path.jpg`). The image files are **not** in this pack and are **not** copied into `~/.config`. They belong to `FirstIntegral/omarchy-wallpapers` (`~/Projects/omarchy-wallpapers/backgrounds/`).
+Also: the theme and font named in `source.json` (currently **Starship Celebration** + JetBrainsMono Nerd Font), and the **default wallpaper** pinned by filename (`wallpaper`, currently `sc-photo-13-orbital-liftoff-1.jpg`). The image files are **not** in this pack. Theme files are **not** in this pack either. They belong to `FirstIntegral/starship-theme` (`~/Projects/starship-theme`, private). `omarchy theme install` is the wrong install: a clone keeps `.git`, and Omarchy then drops the theme's `hyprland.lua` and terminal configs. Copy the checkout into `~/.config/omarchy/themes/starship-celebration` without `.git`. Apply does that copy when the checkout exists and the theme directory does not.
 
-The wallpaper picker for a theme is that theme's own backgrounds, plus one extra when a default is pinned. On Osaka Jade that extra is a single symlink, `~/.config/omarchy/backgrounds/osaka-jade/28-jade-bamboo-path.jpg`. The other catalog files are not in the cycle list. Browse them with `imv-dir` in the wallpapers repo. `repin-wallpaper` removes any other symlink in that folder that points into the catalog, on login and after an Osaka Jade theme set. The live selection stays one symlink, `~/.local/state/omarchy/current/background`, aimed at the project file. On a machine without the wallpapers project cloned, apply and sync skip the pin with a note.
+The resolver tries, in order: the installed theme's `backgrounds/`, `~/Projects/starship-theme/backgrounds/`, the stock theme's `backgrounds/`, then `~/Projects/omarchy-wallpapers/backgrounds/`. A theme-owned photo is already in the picker, so the hook does not add a second symlink. A catalog hit still leaves one symlink under `~/.config/omarchy/backgrounds/<slug>/` and removes the other catalog links. The live selection is the same filename, including Omarchy's staged copy under `~/.local/state/omarchy/current/theme/`. On a machine where none of those paths have the file, apply and sync skip the pin with a note.
 
 **Plugins** are never installed by this pack (hard rule). `source.json` lists which plugins belong on this setup (`plugins`); apply prints a note with the exact `omarchy plugin add` command for any that are missing. Install by hand, on your own confirmation. The packed bar layout references `brwsk.tray`, `brwsk.vigil`, and `firstintegral.1config`. On a machine without those plugins the widgets simply do not render until installed. Vigil comes from its own repo. `firstintegral.1config` is installed by `bash ~/.agents/setup.sh` (the 1config brain), not by this pack.
 
@@ -112,6 +112,7 @@ documentation, not pack content.
 - `~/.config/omarchy/plugins/` — Vigil, tray, anything else
 - agentic-OpenTabletDriver — fork daemon, settings in `~/.config/OpenTabletDriver/`, systemd drop-in on the `opentabletdriver` user unit. Do not install stock OpenTabletDriver.
 - Chromium profiles, tokens, fcitx (the one Chromium file in the pack is `chromium-flags.conf`)
+- Theme bytes (`FirstIntegral/starship-theme`) and wallpaper JPEGs. This pack stores the names only.
 - Stock Omarchy files (looknfeel, autostart, branding, menu jsonc, invitation hooks)
 - Agents brain (`FirstIntegral/1config`)
 

@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
-# Put the pack's default wallpaper back after `omarchy theme set` rotates it.
+# Put the pack's pinned wallpaper back after `omarchy theme set` rotates it.
 # Also runs from post-boot, so a login still re-pins when GitHub is unreachable
 # and dots sync bails before its drift check.
 #
-# Image files stay in ~/Projects/omarchy-wallpapers. This script points the
-# Omarchy current-background symlink at the one default, and leaves only that
-# one catalog symlink in the theme's user-backgrounds folder. The picker then
-# shows the theme's own walls plus this default. The rest of the catalog stays
-# out of the cycle list.
+# The file named in source.json is resolved by omarchy/wallpaper.sh: the
+# installed theme, ~/Projects/starship-theme, the stock theme, then the
+# omarchy-wallpapers catalog. No image bytes live in this pack.
+#
+# A catalog hit still leaves one symlink in ~/.config/omarchy/backgrounds/<slug>/
+# and drops the other catalog links, so the picker is the theme's own walls
+# plus that one default. A theme-owned photo is already in the picker; this
+# script does not add a second link.
+#
+# Same filename as the live background is left alone. Omarchy stages a copy
+# under current/theme; that copy is the same photo.
 #
 # theme-set passes the snake-cased theme slug as $1. post-boot passes nothing.
 # A different theme is left alone.
@@ -15,42 +21,41 @@
 set -euo pipefail
 
 slug="${1:-}"
-src="$HOME/Projects/omarchy-dots/source.json"
-[ -f "$src" ] || exit 0
+ROOT="$HOME/Projects/omarchy-dots"
+[ -f "$ROOT/omarchy/wallpaper.sh" ] || exit 0
+# shellcheck disable=SC1091
+. "$ROOT/omarchy/wallpaper.sh"
 
-want_theme="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("theme",""))' "$src" 2>/dev/null || true)"
-name="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("wallpaper",""))' "$src" 2>/dev/null || true)"
+want_theme="$(dots_json_get theme)"
+name="$(dots_json_get wallpaper)"
 [ -n "$want_theme" ] && [ -n "$name" ] || exit 0
 
-want_slug="$(printf '%s' "$want_theme" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')"
+want_slug="$(dots_theme_slug "$want_theme")"
 if [ -n "$slug" ] && [ "$slug" != "$want_slug" ]; then
   exit 0
 fi
 
-catalog="$HOME/Projects/omarchy-wallpapers/backgrounds"
-file="$catalog/$name"
-[ -f "$file" ] || exit 0
+file="$(dots_resolve_wallpaper "$name" "$want_slug" || true)"
+[ -n "$file" ] || exit 0
 
-# Picker reads ~/.config/omarchy/backgrounds/<theme>/ on top of the theme's
-# own walls. Drop every other symlink that points into the catalog. Real files
-# and links that point somewhere else stay.
-dest="$HOME/.config/omarchy/backgrounds/$want_slug"
-mkdir -p "$dest"
-shopt -s nullglob
-for link in "$dest"/*; do
-  [ -L "$link" ] || continue
-  target="$(readlink "$link" || true)"
-  case "$target" in
-    "$catalog"/*)
-      [ "$(basename "$link")" = "$name" ] && continue
-      rm -f -- "$link"
-      ;;
-  esac
-done
-ln -sfn "$file" "$dest/$name"
+if dots_wallpaper_in_catalog "$file"; then
+  catalog="$HOME/Projects/omarchy-wallpapers/backgrounds"
+  dest="$HOME/.config/omarchy/backgrounds/$want_slug"
+  mkdir -p "$dest"
+  shopt -s nullglob
+  for link in "$dest"/*; do
+    [ -L "$link" ] || continue
+    target="$(readlink "$link" || true)"
+    case "$target" in
+      "$catalog"/*)
+        [ "$(basename "$link")" = "$name" ] && continue
+        rm -f -- "$link"
+        ;;
+    esac
+  done
+  ln -sfn "$file" "$dest/$name"
+fi
 
-live="$(readlink -f "$HOME/.local/state/omarchy/current/background" 2>/dev/null || true)"
-want="$(readlink -f "$file")"
-[ "$live" = "$want" ] && exit 0
+dots_wallpaper_current "$name" && exit 0
 
 exec omarchy theme bg set "$file"

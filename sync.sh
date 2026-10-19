@@ -24,6 +24,9 @@
 set -uo pipefail
 
 ROOT=$(cd "$(dirname "$0")" && pwd)
+DOTS_ROOT="$ROOT"
+# shellcheck disable=SC1091
+. "$ROOT/omarchy/wallpaper.sh"
 REMOTE_HTTPS="https://github.com/FirstIntegral/omarchy-dots.git"
 REMOTE_SSH="git@github.com:FirstIntegral/omarchy-dots.git"
 BRANCH="main"
@@ -149,23 +152,24 @@ for pair in "${pairs[@]}"; do
 done
 
 theme_cur="$(omarchy theme current 2>/dev/null || true)"
-theme_want="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["theme"])' "$ROOT/source.json" 2>/dev/null || true)"
+theme_want="$(dots_json_get theme)"
 theme_drift=""
 if [ -n "$theme_want" ] && [ -n "$theme_cur" ] && [ "$theme_cur" != "$theme_want" ]; then
   theme_drift="theme ($theme_cur vs pack $theme_want)"
 fi
 
-# Default wallpaper: pinned by name in source.json, owned by the
-# omarchy-wallpapers project (NOT this pack — no image files here).
-wallpaper="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("wallpaper",""))' "$ROOT/source.json" 2>/dev/null || true)"
+# Wallpaper filename is pinned in source.json. Bytes stay in the theme
+# checkout or the wallpapers catalog — never in this pack. The live link
+# often points at Omarchy's staged copy; the same filename is not drift.
+wallpaper="$(dots_json_get wallpaper)"
+theme_slug="$(dots_theme_slug "$theme_want")"
 wall_file=""
 wall_drift=0
 if [ -n "$wallpaper" ]; then
-  wall_file="$HOME/Projects/omarchy-wallpapers/backgrounds/$wallpaper"
-  live_bg="$(readlink -f "$HOME/.local/state/omarchy/current/background" 2>/dev/null || true)"
-  if [ ! -f "$wall_file" ]; then
-    echo "dots-sync: note — pack wallpaper '$wallpaper' missing (clone FirstIntegral/omarchy-wallpapers to ~/Projects/omarchy-wallpapers); not treated as drift"
-  elif [ "$live_bg" != "$(readlink -f "$wall_file" 2>/dev/null)" ]; then
+  wall_file="$(dots_resolve_wallpaper "$wallpaper" "$theme_slug" || true)"
+  if [ -z "$wall_file" ]; then
+    echo "dots-sync: note — pack wallpaper '$wallpaper' not in the installed theme or the wallpapers catalog; not treated as drift"
+  elif ! dots_wallpaper_current "$wallpaper"; then
     wall_drift=1
   fi
 fi
