@@ -10,6 +10,8 @@ ROOT=$(cd "$(dirname "$0")" && pwd)
 DOTS_ROOT="$ROOT"
 # shellcheck disable=SC1091
 . "$ROOT/omarchy/wallpaper.sh"
+# shellcheck disable=SC1091
+. "$ROOT/omarchy/opencode-theme.sh"
 DRY_RUN=0
 SKIP_THEME=0
 BACKUP_ROOT=""
@@ -51,6 +53,7 @@ for req in \
   "$ROOT/omarchy/shell.json" \
   "$ROOT/omarchy/hooks/heal-keyring" \
   "$ROOT/omarchy/wallpaper.sh" \
+  "$ROOT/omarchy/opencode-theme.sh" \
   "$ROOT/local-bin/omarchy-screensaver" \
   "$ROOT/source.json"
 do
@@ -84,7 +87,10 @@ WALLPAPER="$(dots_json_get wallpaper)"
 THEME_REPO="$(dots_json_get theme_repo)"
 THEME_SLUG="$(dots_theme_slug "$THEME")"
 WALLPAPER_FILE="$(dots_resolve_wallpaper "$WALLPAPER" "$THEME_SLUG" || true)"
+OC_THEME="$(dots_json_get opencode_theme)"
 [ -n "$THEME" ] || die "source.json has no theme"
+[ -n "$OC_THEME" ] || die "source.json has no opencode_theme"
+[ -f "$ROOT/opencode/themes/${OC_THEME}.json" ] || die "pack incomplete: missing opencode/themes/${OC_THEME}.json"
 
 copy_files=(
   "hypr/bindings.lua:${HYPR_DIR}/bindings.lua"
@@ -97,6 +103,7 @@ copy_files=(
   "omarchy/hooks/repin-wallpaper:${OMARCHY_DIR}/hooks/theme-set.d/repin-wallpaper"
   "omarchy/hooks/repin-wallpaper:${OMARCHY_DIR}/hooks/post-boot.d/repin-wallpaper"
   "omarchy/hooks/heal-keyring:${OMARCHY_DIR}/hooks/post-boot.d/heal-keyring"
+  "opencode/themes/${OC_THEME}.json:${HOME_CONFIG}/opencode/themes/${OC_THEME}.json"
 )
 
 backup_if_exists() {
@@ -142,6 +149,8 @@ plan() {
       fi
     fi
   fi
+  log "  opencode theme ${OC_THEME} -> ~/.config/opencode/themes/${OC_THEME}.json"
+  log "  pin that name in cli.json and tui.json; other OpenCode keys stay"
   log "  plugin check: note-only if a listed plugin is missing (never auto-install)"
   log "  hyprctl reload + configerrors (if Hyprland is running)"
 }
@@ -174,6 +183,10 @@ for pair in "${copy_files[@]}"; do
   install_file "$ROOT/$from" "$to"
   log "installed $to"
 done
+
+backup_if_exists "$HOME_CONFIG/opencode/cli.json" "opencode/cli.json"
+backup_if_exists "$HOME_CONFIG/opencode/tui.json" "opencode/tui.json"
+dots_pin_opencode_theme "$OC_THEME" || warn "OpenCode theme pin failed"
 
 # Plugins: info only. The pack never installs, enables, or removes plugins
 # (hard rule). source.json lists which plugins belong on this setup; apply

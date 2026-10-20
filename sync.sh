@@ -10,7 +10,7 @@
 #      then re-exec this script. Bash keeps reading the file it opened, so without
 #      the re-exec a pull that changes the drift list finishes on the old list.
 #   3. drift-check pack files vs ~/.config targets
-#   4. drift → ./apply.sh (hypr + theme/font + default wallpaper)
+#   4. drift → ./apply.sh (hypr + theme/font + default wallpaper + OpenCode glass theme)
 #
 # Does not touch plugins or agentic-OpenTabletDriver.
 #
@@ -27,6 +27,8 @@ ROOT=$(cd "$(dirname "$0")" && pwd)
 DOTS_ROOT="$ROOT"
 # shellcheck disable=SC1091
 . "$ROOT/omarchy/wallpaper.sh"
+# shellcheck disable=SC1091
+. "$ROOT/omarchy/opencode-theme.sh"
 REMOTE_HTTPS="https://github.com/FirstIntegral/omarchy-dots.git"
 REMOTE_SSH="git@github.com:FirstIntegral/omarchy-dots.git"
 BRANCH="main"
@@ -103,6 +105,11 @@ pairs=(
   "omarchy/hooks/heal-keyring:$HOME_CONFIG/omarchy/hooks/post-boot.d/heal-keyring"
 )
 
+oc_theme="$(dots_json_get opencode_theme)"
+if [ -n "$oc_theme" ]; then
+  pairs+=("opencode/themes/${oc_theme}.json:$HOME_CONFIG/opencode/themes/${oc_theme}.json")
+fi
+
 # Machine-local memory of what this pack last wrote to each target, so sync
 # can tell "live was edited locally" from "pack moved" instead of blindly
 # re-applying the pack over local tweaks.
@@ -174,11 +181,16 @@ if [ -n "$wallpaper" ]; then
   fi
 fi
 
+oc_theme_drift=""
+if [ -n "$oc_theme" ]; then
+  oc_theme_drift="$(dots_opencode_theme_drift)"
+fi
+
 file_drift=0
 { [ ${#missing[@]} -gt 0 ] || [ ${#incoming[@]} -gt 0 ]; } && file_drift=1
 
 if [ "$file_drift" -eq 0 ] && [ ${#localedits[@]} -eq 0 ] && [ ${#bothchanged[@]} -eq 0 ] \
-   && [ -z "$theme_drift" ] && [ "$wall_drift" -eq 0 ]; then
+   && [ -z "$theme_drift" ] && [ "$wall_drift" -eq 0 ] && [ -z "$oc_theme_drift" ]; then
   echo "dots-sync: config in sync with origin/$BRANCH"
   exit 0
 fi
@@ -190,6 +202,7 @@ echo "dots-sync: drift detected:"
 [ ${#bothchanged[@]} -gt 0 ] && printf '  - %s (changed on both sides)\n' "${bothchanged[@]}"
 [ -n "$theme_drift" ] && echo "  - $theme_drift"
 [ "$wall_drift" -eq 1 ] && echo "  - wallpaper"
+[ -n "$oc_theme_drift" ] && echo "  - opencode theme ($oc_theme_drift)"
 
 # Local edits (or files changed on both sides) need a human decision. Never
 # clobber them silently — and do not apply the rest either: apply.sh installs
@@ -204,16 +217,27 @@ if [ ${#localedits[@]} -gt 0 ] || [ ${#bothchanged[@]} -gt 0 ]; then
   exit 5
 fi
 
-# Wallpaper-only: re-pin. Do not run apply — `omarchy theme set` rotates the
-# background even when the theme name is already correct.
-if [ "$wall_drift" -eq 1 ] && [ "$file_drift" -eq 0 ] && [ -z "$theme_drift" ]; then
-  echo "dots-sync: wallpaper only — re-pinning $wallpaper (no theme set)"
-  if omarchy theme bg set "$wall_file"; then
+# Wallpaper and the OpenCode theme name are pins, not whole-file copies.
+# Fix them without apply — `omarchy theme set` rotates the background even
+# when the theme name is already correct.
+if [ "$file_drift" -eq 0 ] && [ -z "$theme_drift" ] \
+   && { [ "$wall_drift" -eq 1 ] || [ -n "$oc_theme_drift" ]; }; then
+  if [ "$wall_drift" -eq 1 ]; then
+    echo "dots-sync: re-pinning wallpaper $wallpaper (no theme set)"
+    if ! omarchy theme bg set "$wall_file"; then
+      echo "dots-sync: wallpaper re-pin failed" >&2
+      exit 4
+    fi
     echo "dots-sync: wallpaper re-pinned"
-    exit 0
   fi
-  echo "dots-sync: wallpaper re-pin failed" >&2
-  exit 4
+  if [ -n "$oc_theme_drift" ]; then
+    echo "dots-sync: pinning OpenCode theme $oc_theme"
+    if ! dots_pin_opencode_theme "$oc_theme"; then
+      echo "dots-sync: OpenCode theme pin failed" >&2
+      exit 4
+    fi
+  fi
+  exit 0
 fi
 
 if [ -n "$(git -C "$ROOT" status --porcelain --untracked-files=no)" ]; then

@@ -15,6 +15,7 @@ You are on the **destination** Omarchy box. This is a config pack, not a softwar
 - Do **not** copy `hypr/monitors.lua` onto this machine. It is not in the pack. Configure monitors locally (`Super+Space` → Setup → Monitors, or edit `~/.config/hypr/monitors.lua` for **this** hardware).
 - Do **not** write `/usr/share/omarchy/` (package-owned; next `omarchy update` wipes it).
 - Do **not** rsync or copy all of `~/.config` or `$HOME`.
+- Do **not** copy `~/.config/opencode/opencode.jsonc`, `cli.json`, `tui.json`, or `plugins/`. The pack installs `opencode/themes/system-glass.json` and pins the theme name. Other OpenCode keys stay on the machine.
 - Do **not** run `omarchy refresh`, `omarchy refresh hyprland`, `omarchy refresh shell`, or `omarchy reinstall configs`. Those reset to stock.
 - Do **not** invent a copy. `./apply.sh` is the only mutation path.
 - Do **not** hand-write `~/.config/omarchy/shell.json`. The bar layout ships in the pack (`omarchy/shell.json`) and lands only via `./apply.sh`.
@@ -90,8 +91,11 @@ Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead
 | `local-bin/omarchy-screensaver` | `~/.local/bin/omarchy-screensaver` (matrix-only screensaver) |
 | `omarchy/hooks/repin-wallpaper` | `~/.config/omarchy/hooks/theme-set.d/repin-wallpaper` and `post-boot.d/repin-wallpaper` |
 | `omarchy/hooks/heal-keyring` | `~/.config/omarchy/hooks/post-boot.d/heal-keyring` (fixes a broken Secret Service default keyring at every login; also runs once during apply) |
+| `opencode/themes/system-glass.json` | `~/.config/opencode/themes/system-glass.json` (OpenCode glass theme; `source.json` `opencode_theme`) |
 
-Also: the theme and font named in `source.json` (currently **Starship Celebration** + JetBrainsMono Nerd Font), and the **default wallpaper** pinned by filename (`wallpaper`, currently `sc-photo-13-orbital-liftoff-1.jpg`). The image files are **not** in this pack. Theme files are **not** in this pack either. They belong to `FirstIntegral/starship-theme` (`~/Projects/starship-theme`, private). `omarchy theme install` is the wrong install: a clone keeps `.git`, and Omarchy then drops the theme's `hyprland.lua` and terminal configs. Copy the checkout into `~/.config/omarchy/themes/starship-celebration` without `.git`. Apply does that copy when the checkout exists and the theme directory does not.
+Also: the theme and font named in `source.json` (currently **Starship Celebration** + JetBrainsMono Nerd Font), and the **default wallpaper** pinned by filename (`wallpaper`, currently `sc-photo-13-orbital-liftoff-1.jpg`). The image files are **not** in this pack. Omarchy theme files are **not** in this pack either. They belong to `FirstIntegral/starship-theme` (`~/Projects/starship-theme`, private).
+
+OpenCode's glass theme **is** in this pack (`opencode_theme`, currently `system-glass`). Apply copies that JSON and sets `cli.json` `theme.name` plus `tui.json` `theme` to the same name. It does not rewrite the rest of either file. The JSON is a snapshot of the `#070B14` terminal glass: main background stays clear, and the raised navy blocks are `#111b32d0` / `#162341d0` (alpha `0xD0`). It does not follow a later terminal palette change. Regenerate it when that background changes. Restart OpenCode to see it. `omarchy theme install` is the wrong install: a clone keeps `.git`, and Omarchy then drops the theme's `hyprland.lua` and terminal configs. Copy the checkout into `~/.config/omarchy/themes/starship-celebration` without `.git`. Apply does that copy when the checkout exists and the theme directory does not.
 
 The resolver tries, in order: the installed theme's `backgrounds/`, `~/Projects/starship-theme/backgrounds/`, the stock theme's `backgrounds/`, then `~/Projects/omarchy-wallpapers/backgrounds/`. A theme-owned photo is already in the picker, so the hook does not add a second symlink. A catalog hit still leaves one symlink under `~/.config/omarchy/backgrounds/<slug>/` and removes the other catalog links. The live selection is the same filename, including Omarchy's staged copy under `~/.local/state/omarchy/current/theme/`. On a machine where none of those paths have the file, apply and sync skip the pin with a note.
 
@@ -112,7 +116,8 @@ documentation, not pack content.
 - `~/.config/omarchy/plugins/` — Vigil, tray, anything else
 - agentic-OpenTabletDriver — fork daemon, settings in `~/.config/OpenTabletDriver/`, systemd drop-in on the `opentabletdriver` user unit. Do not install stock OpenTabletDriver.
 - Chromium profiles, tokens, fcitx (the one Chromium file in the pack is `chromium-flags.conf`)
-- Theme bytes (`FirstIntegral/starship-theme`) and wallpaper JPEGs. This pack stores the names only.
+- Omarchy theme bytes (`FirstIntegral/starship-theme`) and wallpaper JPEGs. This pack stores the names only. The OpenCode glass theme is the exception above.
+- OpenCode permissions, providers, and plugins (`opencode.jsonc`, `plugins/`). `cli.json` and `tui.json` are not copied; apply only pins the theme name.
 - Stock Omarchy files (looknfeel, autostart, branding, menu jsonc, invitation hooks)
 - Agents brain (`FirstIntegral/1config`)
 

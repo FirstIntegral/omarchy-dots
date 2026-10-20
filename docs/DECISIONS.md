@@ -1,5 +1,12 @@
 # Decisions & Rationale (ADRs)
 
+## 2026-10-20 OpenCode glass theme ships in this pack
+- The lighter navy blocks in OpenCode are its own raised fills, painted opaque over the terminal glass. A custom theme `system-glass` keeps the main background clear (`#070b1400`) and puts alpha `0xD0` on `background.raised.base` (`#111b32`) and `background.raised.high` (`#162341`). `raised.max` stays opaque. The user wants that look on every machine that applies this pack.
+- The pack copies `opencode/themes/system-glass.json` and pins the name from `source.json` `opencode_theme` into `cli.json` `theme.name` and `tui.json` `theme`. `sync.sh` hashes the theme file like the other pack files. A wrong name is a pin, same idea as the wallpaper: fixed without `omarchy theme set`.
+- `cli.json`, `tui.json`, and `opencode.jsonc` are not pack files. The pin loads JSON, sets the name, and writes the other keys back. Permissions stay in `opencode.jsonc` (1config). Plugins stay out.
+- The theme is a snapshot of this terminal palette (`#070B14` at terminal opacity 0.78). A later Starship Celebration background change does not update it. Regenerate the JSON in the same turn as that change.
+- Rejected: packing all of `~/.config/opencode` (permissions, providers, Vigil). Rejected: leaving the theme only on this machine (the other box's login would stay on the built-in `system` theme, which paints those blocks solid). Rejected: putting the JSON in `starship-theme` (that repo is the Omarchy theme; OpenCode does not read it).
+
 ## 2026-10-19 Pack selects Starship Celebration; theme files stay in starship-theme
 - Live desktop is Starship Celebration. Wallpaper is `sc-photo-13-orbital-liftoff-1.jpg` (staged under `current/theme/backgrounds/`). `source.json` still said Osaka Jade and `28-jade-bamboo-path.jpg`. Next login, `sync.sh` would have treated that as theme drift plus wallpaper drift and run `apply.sh`, which theme-sets Osaka Jade and re-pins the jade photo.
 - The pack now records the theme name, the font, and the wallpaper filename. `theme_repo` and `wallpaper_repo` point at `FirstIntegral/starship-theme`. No theme files and no JPEGs enter this repo. `omarchy/wallpaper.sh` resolves the filename: installed theme, `~/Projects/starship-theme/backgrounds`, stock theme, then the wallpapers catalog. The same filename is not drift, so Omarchy's staged copy does not cause a re-pin. A catalog hit still trims the picker; a theme-owned photo does not get a second symlink.

@@ -16,6 +16,7 @@ This is not a software project to extend. The AI handoff is `session_compact.md`
 - Do **not** copy `hypr/monitors.lua`. Configure monitors on this machine.
 - Do **not** write `/usr/share/omarchy/`.
 - Do **not** rsync all of `~/.config` or `$HOME`.
+- Do **not** copy `~/.config/opencode/opencode.jsonc`, `cli.json`, `tui.json`, or `plugins/`. The glass theme lands only via `./apply.sh` (`opencode/themes/system-glass.json` plus the theme-name pin).
 - Do **not** run `omarchy refresh` / `omarchy reinstall configs`.
 - Do **not** write `~/.config/omarchy/plugins/`. Bar layout is packed (`omarchy/shell.json`) and lands only via `./apply.sh`.
 - Do **not** `omarchy plugin add` / `enable` / `remove`.
