@@ -1,6 +1,12 @@
 # Decisions & Rationale (ADRs)
 
+## 2026-10-21 OpenCode raised fills are clear
+- Screenshot `~/Pictures/screenshot-2026-10-21_19-46-10.png` still shows heavy navy blocks. Sampled block pixels are `(15, 24, 44)`. That is `#111b32` at alpha `0xD0` flattened onto `#070b14` (`0.816 * (17, 27, 50) + 0.184 * (7, 11, 20)`). The wallpaper is not in that blend. Gaps, where `background.base` is `#070b1400`, show the rocket. Any nonzero alpha on `background.raised.base` / `.high` stays a solid navy cell.
+- Those two fills are now `#111b3200` and `#16234100`. Alpha `0` is the same path as the main background, so the terminal glass shows through tool output, message chrome, and the side panel. The left border (`#2b447d`) still marks a block. `raised.max` (`#4e6660`) and the diff fills stay opaque.
+- Rejected: a lower but nonzero alpha such as `0x66`. OpenCode composites that onto `#070b14` and emits an opaque cell, so the rocket stays hidden. Rejected: editing the live theme only (next login sync would put `0xD0` back).
+
 ## 2026-10-20 OpenCode glass theme ships in this pack
+- Superseded-by 2026-10-21 OpenCode raised fills are clear. The `0xD0` alpha in the next bullet is the old value. The pack and pin mechanism below still stands.
 - The lighter navy blocks in OpenCode are its own raised fills, painted opaque over the terminal glass. A custom theme `system-glass` keeps the main background clear (`#070b1400`) and puts alpha `0xD0` on `background.raised.base` (`#111b32`) and `background.raised.high` (`#162341`). `raised.max` stays opaque. The user wants that look on every machine that applies this pack.
 - The pack copies `opencode/themes/system-glass.json` and pins the name from `source.json` `opencode_theme` into `cli.json` `theme.name` and `tui.json` `theme`. `sync.sh` hashes the theme file like the other pack files. A wrong name is a pin, same idea as the wallpaper: fixed without `omarchy theme set`.
 - `cli.json`, `tui.json`, and `opencode.jsonc` are not pack files. The pin loads JSON, sets the name, and writes the other keys back. Permissions stay in `opencode.jsonc` (1config). Plugins stay out.

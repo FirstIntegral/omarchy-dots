@@ -61,8 +61,8 @@
     "background": {
       "base": "#070b1400",
       "raised": {
-        "base": "#111b32d0",
-        "high": "#162341d0",
+        "base": "#111b3200",
+        "high": "#16234100",
         "max": "#4e6660"
       },
       "action": {
