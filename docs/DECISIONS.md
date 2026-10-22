@@ -1,5 +1,11 @@
 # Decisions & Rationale (ADRs)
 
+## 2026-10-22 Default agent is cursor-agent
+- Live `~/.config/omarchy/defaults/agent` said `cursor-agent` at 2026-10-21 22:08. The user journal shows Omarchy launching `cursor-agent` and installing `cursor-bin` in that same minute. Sync classified a local edit: the stored hash still matched the pack's `opencode`, so login applied nothing and the boot slip named this file.
+- Pack follows the live machine: `omarchy/defaults/agent` and `source.json` `default_agent` now say `cursor-agent`. The file is one line plus a newline, the same bytes `omarchy-default-agent` writes.
+- The other machine's next login treats this as incoming if its live file is still `opencode`, and `apply.sh` installs the whole pack, including this agent name.
+- Rejected: `./apply.sh` to force `opencode` back (that undoes the switch; the next menu choice writes `cursor-agent` again and the slip returns).
+
 ## 2026-10-21 OpenCode raised fills are clear
 - Screenshot `~/Pictures/screenshot-2026-10-21_19-46-10.png` still shows heavy navy blocks. Sampled block pixels are `(15, 24, 44)`. That is `#111b32` at alpha `0xD0` flattened onto `#070b14` (`0.816 * (17, 27, 50) + 0.184 * (7, 11, 20)`). The wallpaper is not in that blend. Gaps, where `background.base` is `#070b1400`, show the rocket. Any nonzero alpha on `background.raised.base` / `.high` stays a solid navy cell.
 - Those two fills are now `#111b3200` and `#16234100`. Alpha `0` is the same path as the main background, so the terminal glass shows through tool output, message chrome, and the side panel. The left border (`#2b447d`) still marks a block. `raised.max` (`#4e6660`) and the diff fills stay opaque.
@@ -145,6 +151,7 @@
 - Rejected: per-file selective apply flags on `apply.sh` (more surface, same human decision needed anyway). Rejected: prompting at boot (unattended; must never hang). Rejected: auto-committing local edits up like config-sync's Publish (pack stays hand-curated; see 2026-09-05 ADR). Rejected: a single "last sync" timestamp (a per-file record is what makes local-edit detection precise).
 
 ## 2026-09-29 Default agent is opencode, not grok
+- Superseded-by 2026-10-22 Default agent is cursor-agent. The drift rule below still stands. The agent name does not.
 - Live `~/.config/omarchy/defaults/agent` said `opencode` (user switched tools; deepseek-v4-pro via opencode). Sync's new local-edit guard refused to clobber it with the pack's `grok`.
 - Pack follows the live machine: `omarchy/defaults/agent` and `source.json.default_agent` now say `opencode`.
 - Rejected: forcing `grok` back with apply.sh (live state was the deliberate one).

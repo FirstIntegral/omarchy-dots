@@ -7,7 +7,7 @@
   "font": "JetBrainsMono Nerd Font",
   "wallpaper": "sc-photo-13-orbital-liftoff-1.jpg",
   "wallpaper_repo": "git@github.com:FirstIntegral/starship-theme.git",
-  "default_agent": "opencode",
+  "default_agent": "cursor-agent",
   "opencode_theme": "system-glass",
   "pack_repo": "git@github.com:FirstIntegral/omarchy-dots.git",
   "plugins": [

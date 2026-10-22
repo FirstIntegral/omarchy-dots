@@ -86,7 +86,7 @@ Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead
 | `hypr/hyprland.lua` | `~/.config/hypr/hyprland.lua` (prepends `~/.local/bin` to PATH) |
 | `hypr/input.lua` | `~/.config/hypr/input.lua` (pointer sensitivity; Hyprland ignores the G930L kernel HID so agentic-OpenTabletDriver can own the pen) |
 | `chromium/chromium-flags.conf` | `~/.config/chromium-flags.conf` (pins `--password-store=basic` and `--no-default-browser-check`) |
-| `omarchy/defaults/agent` | `~/.config/omarchy/defaults/agent` (`opencode`) |
+| `omarchy/defaults/agent` | `~/.config/omarchy/defaults/agent` (`cursor-agent`) |
 | `omarchy/shell.json` | `~/.config/omarchy/shell.json` (bar layout, idle; left section is workspaces only, no `omarchy.menu` logo) |
 | `local-bin/omarchy-screensaver` | `~/.local/bin/omarchy-screensaver` (matrix-only screensaver) |
 | `omarchy/hooks/repin-wallpaper` | `~/.config/omarchy/hooks/theme-set.d/repin-wallpaper` and `post-boot.d/repin-wallpaper` |
