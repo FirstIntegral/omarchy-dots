@@ -2,7 +2,7 @@
   "exported": "2026-10-19",
   "omarchy_version": "4.0.2-1",
   "channel": "stable",
-  "theme": "Starship Celebration",
+  "theme": "Starship",
   "theme_repo": "git@github.com:FirstIntegral/starship-theme.git",
   "font": "JetBrainsMono Nerd Font",
   "wallpaper": "sc-photo-13-orbital-liftoff-1.jpg",

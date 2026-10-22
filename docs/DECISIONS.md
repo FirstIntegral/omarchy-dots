@@ -1,5 +1,16 @@
 # Decisions & Rationale (ADRs)
 
+## 2026-10-22 Menu name is Starship
+- `source.json` `theme` is `Starship`. The live folder is `~/.config/omarchy/themes/starship`. `omarchy theme current` prints `Starship`. Login sync compares those strings, so it does not theme-set `Starship Theme` or `Starship Celebration` and recreate the old folders.
+- Wallpaper filename stays `sc-photo-13-orbital-liftoff-1.jpg`. Theme bytes stay in `FirstIntegral/starship-theme`. Apply still copies that checkout into `themes/<slug>` when the slug directory is missing.
+- Rejected: leaving the pack on Starship Theme (the next login would put `starship-theme` back on the menu).
+
+## 2026-10-22 Menu name is Starship Theme
+- Superseded-by 2026-10-22 Menu name is Starship. The folder name below is the old value.
+- Super+Space labels a theme from its folder slug. The live folder moved from `starship-celebration` to `starship-theme`. `omarchy theme current` now prints `Starship Theme`. `source.json` `theme` matches that string, so the next login does not treat the rename as drift and does not `theme set` the old name.
+- Wallpaper filename stays `sc-photo-13-orbital-liftoff-1.jpg`. Theme bytes stay in `FirstIntegral/starship-theme`. This pack still does not vendor them.
+- Rejected: leaving `source.json` on Starship Celebration (sync would recreate `~/.config/omarchy/themes/starship-celebration` from the checkout and switch the desktop back).
+
 ## 2026-10-22 Default agent is cursor-agent
 - Live `~/.config/omarchy/defaults/agent` said `cursor-agent` at 2026-10-21 22:08. The user journal shows Omarchy launching `cursor-agent` and installing `cursor-bin` in that same minute. Sync classified a local edit: the stored hash still matched the pack's `opencode`, so login applied nothing and the boot slip named this file.
 - Pack follows the live machine: `omarchy/defaults/agent` and `source.json` `default_agent` now say `cursor-agent`. The file is one line plus a newline, the same bytes `omarchy-default-agent` writes.
@@ -20,6 +31,7 @@
 - Rejected: packing all of `~/.config/opencode` (permissions, providers, Vigil). Rejected: leaving the theme only on this machine (the other box's login would stay on the built-in `system` theme, which paints those blocks solid). Rejected: putting the JSON in `starship-theme` (that repo is the Omarchy theme; OpenCode does not read it).
 
 ## 2026-10-19 Pack selects Starship Celebration; theme files stay in starship-theme
+- Superseded-by 2026-10-22 Menu name is Starship Theme. The wallpaper pin and "theme files stay in starship-theme" below still stand. The theme name in the next bullet is the old value.
 - Live desktop is Starship Celebration. Wallpaper is `sc-photo-13-orbital-liftoff-1.jpg` (staged under `current/theme/backgrounds/`). `source.json` still said Osaka Jade and `28-jade-bamboo-path.jpg`. Next login, `sync.sh` would have treated that as theme drift plus wallpaper drift and run `apply.sh`, which theme-sets Osaka Jade and re-pins the jade photo.
 - The pack now records the theme name, the font, and the wallpaper filename. `theme_repo` and `wallpaper_repo` point at `FirstIntegral/starship-theme`. No theme files and no JPEGs enter this repo. `omarchy/wallpaper.sh` resolves the filename: installed theme, `~/Projects/starship-theme/backgrounds`, stock theme, then the wallpapers catalog. The same filename is not drift, so Omarchy's staged copy does not cause a re-pin. A catalog hit still trims the picker; a theme-owned photo does not get a second symlink.
 - `bar.transparent` stays `true`. The live `shell.json` already matches the pack.
