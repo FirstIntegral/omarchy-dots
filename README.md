@@ -83,11 +83,11 @@ Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead
 | Pack path | Lands at |
 |-----------|----------|
 | `hypr/bindings.lua` | `~/.config/hypr/bindings.lua` (SUPER+L lock, SUPER+F files, SUPER+S screenshot, SUPER+T terminal, Ctrl+C/Ctrl+V terminal-aware copy/paste) |
-| `hypr/hyprland.lua` | `~/.config/hypr/hyprland.lua` (prepends `~/.local/bin` to PATH) |
+| `hypr/hyprland.lua` | `~/.config/hypr/hyprland.lua` (prepends `~/.local/bin` to PATH; `pcall` loads `hypr.phone` when that file exists) |
 | `hypr/input.lua` | `~/.config/hypr/input.lua` (pointer sensitivity; Hyprland ignores the G930L kernel HID so agentic-OpenTabletDriver can own the pen) |
 | `chromium/chromium-flags.conf` | `~/.config/chromium-flags.conf` (pins `--password-store=basic` and `--no-default-browser-check`) |
 | `omarchy/defaults/agent` | `~/.config/omarchy/defaults/agent` (`cursor-agent`) |
-| `omarchy/shell.json` | `~/.config/omarchy/shell.json` (bar layout, idle; left section is workspaces only, no `omarchy.menu` logo) |
+| `omarchy/shell.json` | `~/.config/omarchy/shell.json` (bar layout, idle; left section is workspaces only, no `omarchy.menu` logo; right side starts with `firstintegral.phone`) |
 | `local-bin/omarchy-screensaver` | `~/.local/bin/omarchy-screensaver` (matrix-only screensaver) |
 | `omarchy/hooks/repin-wallpaper` | `~/.config/omarchy/hooks/theme-set.d/repin-wallpaper` and `post-boot.d/repin-wallpaper` |
 | `omarchy/hooks/heal-keyring` | `~/.config/omarchy/hooks/post-boot.d/heal-keyring` (fixes a broken Secret Service default keyring at every login; also runs once during apply) |
@@ -99,7 +99,7 @@ OpenCode's glass theme **is** in this pack (`opencode_theme`, currently `system-
 
 The resolver tries, in order: the installed theme's `backgrounds/`, `~/Projects/starship-theme/backgrounds/`, the stock theme's `backgrounds/`, then `~/Projects/omarchy-wallpapers/backgrounds/`. A theme-owned photo is already in the picker, so the hook does not add a second symlink. A catalog hit still leaves one symlink under `~/.config/omarchy/backgrounds/<slug>/` and removes the other catalog links. The live selection is the same filename, including Omarchy's staged copy under `~/.local/state/omarchy/current/theme/`. On a machine where none of those paths have the file, apply and sync skip the pin with a note.
 
-**Plugins** are never installed by this pack (hard rule). `source.json` lists which plugins belong on this setup (`plugins`); apply prints a note with the exact `omarchy plugin add` command for any that are missing. Install by hand, on your own confirmation. The packed bar layout references `brwsk.tray`, `brwsk.vigil`, and `firstintegral.1config`. On a machine without those plugins the widgets simply do not render until installed. Vigil comes from its own repo. `firstintegral.1config` is installed by `bash ~/.agents/setup.sh` (the 1config brain), not by this pack.
+**Plugins** are never installed by this pack (hard rule). `source.json` lists which plugins belong on this setup (`plugins`); apply prints a note with the exact `omarchy plugin add` command for any that are missing. Install by hand, on your own confirmation. The packed bar layout references `firstintegral.phone`, `brwsk.tray`, `brwsk.vigil`, and `firstintegral.1config`. On a machine without those plugins the widgets simply do not render until installed. Vigil comes from its own repo. `firstintegral.1config` is installed by `bash ~/.agents/setup.sh` (the 1config brain), not by this pack. `firstintegral.phone` and `~/.config/hypr/phone.lua` come from `bash ~/Projects/omarchy-phone/install.sh`. The packed `hyprland.lua` loads `hypr.phone` inside `pcall`, so a machine without that file still reloads clean.
 
 Chromium pins `--password-store=basic` because a corrupted gnome-keyring (this box gets `invalid or unrecognized format` after some updates) makes Chromium mint a fresh storage key and silently log out of every site. It also carries `--no-default-browser-check`, which Omarchy migration `1791935188` appends to a live flags file. The pack keeps that line so the next update is not a drift.
 

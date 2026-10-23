@@ -1,5 +1,11 @@
 # Decisions & Rationale (ADRs)
 
+## 2026-10-23 Pack the Omarchy Phone bar id and Hyprland load
+- Login `sync.sh` exited 5. Live `~/.config/hypr/hyprland.lua` and `~/.config/omarchy/shell.json` were local edits. The pack hash was unchanged, so nothing applied. The boot slip named `hypr/hyprland.lua` and one more file.
+- Those edits are the Omarchy Phone install from 2026-10-22. `hyprland.lua` loads `hypr.phone`. The bar's right side starts with `firstintegral.phone`, then the previous order. The plugin directory and `phone.lua` stay out of this pack. `omarchy-phone`'s `install.sh` owns them.
+- The require is `pcall(function() require("hypr.phone") end)`. The inner string is still `require("hypr.phone")`, so that install script does not append a second line. A destination machine without `~/.config/hypr/phone.lua` reloads with no config error. The widget id draws nothing until the plugin directory exists, same as `firstintegral.1config`.
+- Rejected: `./apply.sh` to force the old pack (drops the phone bind and the bar id; the next phone install writes them again and the slip returns). Rejected: an unguarded `require` (the other machine's next apply would load a missing module and `hyprctl configerrors` would stay dirty). Rejected: vendoring `phone.lua` or `firstintegral.phone` (those bytes live in `FirstIntegral/omarchy-phone`).
+
 ## 2026-10-22 Menu name is Starship
 - `source.json` `theme` is `Starship`. The live folder is `~/.config/omarchy/themes/starship`. `omarchy theme current` prints `Starship`. Login sync compares those strings, so it does not theme-set `Starship Theme` or `Starship Celebration` and recreate the old folders.
 - Wallpaper filename stays `sc-photo-13-orbital-liftoff-1.jpg`. Theme bytes stay in `FirstIntegral/starship-theme`. Apply still copies that checkout into `themes/<slug>` when the slug directory is missing.

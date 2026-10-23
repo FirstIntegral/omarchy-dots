@@ -38,3 +38,7 @@ require("default.hypr.toggles")
 o.window("^imv$", { tag = "-floating-window" })
 o.window("^imv$", { tile = true })
 o.window("^imv$", { fullscreen = true })
+
+-- Omarchy Phone. Super+Shift+H mirrors the phone.
+-- pcall: a machine without hypr/phone.lua still loads this config.
+pcall(function() require("hypr.phone") end)
