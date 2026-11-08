@@ -1,5 +1,11 @@
 # Decisions & Rationale (ADRs)
 
+## 2026-11-08 Drop omarchy.agents from the bar
+- The Agents card is stock `omarchy.agents` (`/usr/share/omarchy/shell/plugins/agents/`). Migration `1785344985` inserted that id on `right`. Commit `2c27290` packed the live file, so the slot is this pack, not a third-party plugin.
+- `firstintegral.1config` already shows those meters. The bar keeps 1config and drops `omarchy.agents`. Stock widget files stay in Omarchy. This pack still does not install or disable plugins.
+- A later migration that inserts the id only when it is absent could put the icon back. This entry is what stops login sync from restoring today's slot.
+- Rejected: `omarchy plugin disable omarchy.agents` (this pack does not enable or disable plugins; the layout id is what sync reapplies). Rejected: editing only `~/.config/omarchy/shell.json` (next login sees a local edit and exits 5).
+
 ## 2026-11-08 Pack the 4.5 bar sections and the Chromium overlay scrollbar
 - Login `sync.sh` exited 5. Live `~/.config/chromium-flags.conf` and `~/.config/omarchy/shell.json` were local edits. The pack hash was unchanged, so nothing applied. The boot slip said `2 edited: chromium-flags.conf +1 — not applied`.
 - Chromium: Omarchy migration `1791376887` appended `OverlayScrollbar` to `--enable-features`. Stock `/usr/share/omarchy/config/chromium-flags.conf` has that token too, and still says `--password-store=gnome-libsecret`. The pack keeps `--password-store=basic` and now includes `OverlayScrollbar`.
