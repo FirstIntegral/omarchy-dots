@@ -1,5 +1,12 @@
 # Decisions & Rationale (ADRs)
 
+## 2026-11-08 Pack the 4.5 bar sections and the Chromium overlay scrollbar
+- Login `sync.sh` exited 5. Live `~/.config/chromium-flags.conf` and `~/.config/omarchy/shell.json` were local edits. The pack hash was unchanged, so nothing applied. The boot slip said `2 edited: chromium-flags.conf +1 — not applied`.
+- Chromium: Omarchy migration `1791376887` appended `OverlayScrollbar` to `--enable-features`. Stock `/usr/share/omarchy/config/chromium-flags.conf` has that token too, and still says `--password-store=gnome-libsecret`. The pack keeps `--password-store=basic` and now includes `OverlayScrollbar`.
+- Bar: the live file is the shell's current `shell.json`. The clock stays alone in `center`. `omarchy.indicators`, `omarchy.weather`, and `omarchy.system-update` sit in `centerBegin`. `omarchy.elsewhen` sits in `centerEnd` with Baghdad, Tokyo, Los Angeles, New York, and London. `omarchy.keyboard-layout` is the first id on `right`, before `firstintegral.phone`. `centerAnchor` is gone. `firstintegral.1config` stays on `right`. Elsewhen is a stock bar widget. This pack still does not install plugin files.
+- This machine is omarchy `4.5.0-3`. `source.json` `omarchy_version` stays `4.0.2-1`. Apply still warns and continues on any 4.x. That pin was left on purpose.
+- Rejected: `./apply.sh` to force the old pack (drops the scrollbar flag and the 4.5 sections; the next shell save or migration writes them again and the slip returns). Rejected: copying the stock Chromium flags (puts `gnome-libsecret` back). Rejected: vendoring `omarchy.elsewhen` (it ships with Omarchy).
+
 ## 2026-10-23 Pack the Omarchy Phone bar id and Hyprland load
 - Login `sync.sh` exited 5. Live `~/.config/hypr/hyprland.lua` and `~/.config/omarchy/shell.json` were local edits. The pack hash was unchanged, so nothing applied. The boot slip named `hypr/hyprland.lua` and one more file.
 - Those edits are the Omarchy Phone install from 2026-10-22. `hyprland.lua` loads `hypr.phone`. The bar's right side starts with `firstintegral.phone`, then the previous order. The plugin directory and `phone.lua` stay out of this pack. `omarchy-phone`'s `install.sh` owns them.
