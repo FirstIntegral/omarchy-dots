@@ -1,5 +1,13 @@
 # Decisions & Rationale (ADRs)
 
+## 2026-11-10 Pack wins over a drifted live file
+- Login sync is how the other machine becomes this pack. Exit 5 stopped that. On 2026-11-10 the live bar was still commit `2c27290` (Agents icon present). Sync memory was still commit `05ab998`. The pack was commit `c7eb181` (Agents icon gone). Three hashes, so sync called the file changed on both sides and applied nothing.
+- `sync.sh` now treats a differing live file the same as incoming drift. Local edit and both-changed both fall through to `./apply.sh`. Apply still backs up overwritten files under `~/.config/omarchy-dots-backup.<timestamp>/`. A wallpaper-only re-pin still skips apply, and it does not run when a packed file also differs.
+- The pack repo is unchanged: unpushed commits, a dirty tree, and a divergence still apply nothing and still do not pull.
+- An Omarchy migration that rewrites a packed file is put back at the next login. Keep that change by copying it into this repo and pushing. The other machine then receives it.
+- Supersedes 2026-09-29 Sync drift gets categories; local edits are never clobbered. The categories stay in the log. The stop does not.
+- Rejected: leaving exit 5 (the other machine never receives a pack change once its live file has also moved). Rejected: applying per file (apply.sh installs the whole pack; a partial copy is how the hashes diverged). Rejected: auto-committing the live file into the pack (the pack stays hand-curated).
+
 ## 2026-11-08 Drop omarchy.agents from the bar
 - The Agents card is stock `omarchy.agents` (`/usr/share/omarchy/shell/plugins/agents/`). Migration `1785344985` inserted that id on `right`. Commit `2c27290` packed the live file, so the slot is this pack, not a third-party plugin.
 - `firstintegral.1config` already shows those meters. The bar keeps 1config and drops `omarchy.agents`. Stock widget files stay in Omarchy. This pack still does not install or disable plugins.
@@ -175,6 +183,7 @@
 - Rejected: copying the JPEG into the pack or into `~/.config` (user wants one home for the project). Rejected: dropping `theme set` from apply (theme extras still have to run). Rejected: relying on re-pin-after-rotate (this boot already lost that race until a later `bg set`).
 
 ## 2026-09-29 Sync drift gets categories; local edits are never clobbered
+- Superseded-by 2026-11-10 Pack wins over a drifted live file. The categories below still stand. The stop does not.
 - Before: any byte diff between a pack file and its live target ran `apply.sh`, which installs the whole pack — a deliberate live tweak (an extra binding tested by hand) was silently overwritten at the next login.
 - Now `sync.sh` keeps a machine-local state file `~/.local/state/omarchy-dots/sync-state` recording the sha256 of each target as last applied. Per-file drift is classified: missing / incoming (pack moved, live untouched, or first sync run) / local edit (pack unchanged, live moved) / both changed.
 - Auto-apply runs only when drift is purely missing/incoming (+ theme/wallpaper). Any local edit or both-changed file stops the whole apply (apply.sh installs everything, so a mixed apply would clobber the edits) and exits `5` with per-file instructions: copy the live files into the pack and push, or run `apply.sh` to force the pack.

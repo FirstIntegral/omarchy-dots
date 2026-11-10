@@ -62,15 +62,15 @@ bash ~/Projects/omarchy-dots/sync.sh
 It fetches `origin/main` (validated remote, BatchMode, ff-only), pulls if behind, then re-execs itself and drift-checks pack files against live targets. The re-exec matters: bash keeps reading the script file it already opened, so a pull that changes `sync.sh` would otherwise finish the login on the old drift list. Drift is classified per file, using a machine-local state file at `~/.local/state/omarchy-dots/sync-state`:
 
 - **missing / incoming** (pack moved, live untouched, or first run) → runs `./apply.sh`
-- **local edit** (pack unchanged, live edited) or **both changed** → nothing applied, exit `5`, with per-file instructions (copy the live files into the pack and push, or run `apply.sh` to force the pack)
+- **local edit** (pack unchanged, live edited) or **both changed** → the pack still wins. `./apply.sh` replaces those live files. Each overwritten file is backed up under `~/.config/omarchy-dots-backup.<timestamp>/` first.
 
-Wallpaper-only drift does **not** run apply (that would theme-set); it re-pins with `omarchy theme bg set`. Local repo edits are never touched.
+Wallpaper-only drift does **not** run apply (that would theme-set); it re-pins with `omarchy theme bg set`. A live file that also differs does not take that shortcut. The pack repo itself is never pulled over local commits, a dirty tree, or a divergence.
 
 Login also runs `repin-wallpaper` from `post-boot` (about two seconds after Hyprland starts) and again after every `theme set` of the packed theme. That re-pin does not need GitHub. It no-ops when the pinned file cannot be resolved, and when the live background already has that filename.
 
 Login also runs `heal-keyring` from `post-boot`: if the Secret Service default keyring is broken (unreadable files squatting the `Default` name — the "Choose password for new keyring" loop in Electron apps), it parks the unreadable files, writes a fresh unencrypted default keyring, and restarts the keyring daemon in place. No-op when healthy.
 
-Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead (nothing applied) · `3` dirty repo (nothing pulled) · `4` divergence/apply failed · `5` local edits or both-changed (nothing applied, resolve by hand).
+Exit codes: `0` in sync / applied · `1` fetch failed · `2` local commits ahead (nothing applied) · `3` dirty repo (nothing pulled, and nothing applied over live files) · `4` divergence/apply failed. Exit `5` is retired: a drifted live file is replaced by the pack.
 
 ### After apply
 

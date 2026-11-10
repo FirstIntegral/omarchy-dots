@@ -18,9 +18,10 @@
 #   0   up to date (no drift), or applied successfully
 #   1   fetch failed (offline / auth / remote unreachable)
 #   2   local repo ahead (unpushed commits) — nothing applied
-#   3   behind but repo dirty — nothing pulled/applied
+#   3   behind but repo dirty, or dirty when a live file needs apply — nothing applied
 #   4   divergence / not a repo / wrong branch / wrong remote / apply failed
-#   5   live files locally edited (or changed on both sides) — nothing applied
+# Exit 5 is retired. A live file that differs from the pack is replaced.
+# The pack repo is still not pulled over local commits, a dirty tree, or a divergence.
 set -uo pipefail
 
 ROOT=$(cd "$(dirname "$0")" && pwd)
@@ -54,7 +55,11 @@ done
 # BatchMode: never prompt for a passphrase at boot (ssh-agent must already hold the key).
 export GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh -o BatchMode=yes -o ConnectTimeout=10}"
 
-if ! timeout "$FETCH_TIMEOUT" git -C "$ROOT" fetch -q origin \
+# DOTS_SYNC_SKIP_FETCH is for a fixture that already has origin/$BRANCH.
+# Login never sets it. A skipped fetch does not update the remote ref.
+if [ "${DOTS_SYNC_SKIP_FETCH:-0}" = "1" ]; then
+  echo "dots-sync: fetch skipped" >&2
+elif ! timeout "$FETCH_TIMEOUT" git -C "$ROOT" fetch -q origin \
      "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"; then
   echo "dots-sync: fetch failed (offline or key not available)" >&2
   exit 1
@@ -204,23 +209,19 @@ echo "dots-sync: drift detected:"
 [ "$wall_drift" -eq 1 ] && echo "  - wallpaper"
 [ -n "$oc_theme_drift" ] && echo "  - opencode theme ($oc_theme_drift)"
 
-# Local edits (or files changed on both sides) need a human decision. Never
-# clobber them silently — and do not apply the rest either: apply.sh installs
-# the whole pack, so a mixed apply would overwrite the local edits on the way.
+# The pack is what every machine should match. A live file that drifted
+# (edited here, or moved on both sides) is replaced by apply.sh, which
+# backs the live files up first. A wallpaper-only re-pin must not swallow
+# that case: it exits before apply.
 if [ ${#localedits[@]} -gt 0 ] || [ ${#bothchanged[@]} -gt 0 ]; then
-  echo "dots-sync: nothing applied — resolve by hand:"
-  echo "  keep your edits:  copy the live files into the pack repo, commit, push"
-  echo "  force the pack:   run $ROOT/apply.sh (overwrites the edits)"
-  if [ ${#missing[@]} -gt 0 ] || [ ${#incoming[@]} -gt 0 ]; then
-    echo "  (${#missing[@]} missing / ${#incoming[@]} incoming also waiting; they apply after this is resolved)"
-  fi
-  exit 5
+  echo "dots-sync: pack wins — live files that differ will be replaced"
 fi
 
 # Wallpaper and the OpenCode theme name are pins, not whole-file copies.
 # Fix them without apply — `omarchy theme set` rotates the background even
 # when the theme name is already correct.
-if [ "$file_drift" -eq 0 ] && [ -z "$theme_drift" ] \
+if [ "$file_drift" -eq 0 ] && [ ${#localedits[@]} -eq 0 ] && [ ${#bothchanged[@]} -eq 0 ] \
+   && [ -z "$theme_drift" ] \
    && { [ "$wall_drift" -eq 1 ] || [ -n "$oc_theme_drift" ]; }; then
   if [ "$wall_drift" -eq 1 ]; then
     echo "dots-sync: re-pinning wallpaper $wallpaper (no theme set)"
@@ -246,8 +247,9 @@ if [ -n "$(git -C "$ROOT" status --porcelain --untracked-files=no)" ]; then
 fi
 
 echo "dots-sync: applying pack…"
-if "$ROOT/apply.sh"; then
-  echo "dots-sync: applied (${#missing[@]} missing, ${#incoming[@]} incoming file(s) fixed)"
+apply_cmd="${DOTS_SYNC_APPLY_CMD:-$ROOT/apply.sh}"
+if "$apply_cmd"; then
+  echo "dots-sync: applied (${#missing[@]} missing, ${#incoming[@]} incoming, ${#localedits[@]} local, ${#bothchanged[@]} both-changed)"
   for pair in "${pairs[@]}"; do
     state_put "${pair#*:}" "$(sha256sum "$ROOT/${pair%%:*}" | cut -d' ' -f1)"
   done
