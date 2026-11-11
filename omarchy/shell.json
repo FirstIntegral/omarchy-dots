@@ -61,6 +61,7 @@
       "centerEnd": [
         {
           "id": "omarchy.elsewhen",
+          "units": "C",
           "cities": [
             {
               "name": "Baghdad",

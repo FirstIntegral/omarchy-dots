@@ -1,5 +1,12 @@
 # Decisions & Rationale (ADRs)
 
+## 2026-11-11 Elsewhen temperatures are Celsius
+
+- The world clock is stock `omarchy.elsewhen` in `centerEnd`. Its `units` key was absent, so the panel followed the system locale and showed °F.
+- Pack `omarchy/shell.json` now sets `"units": "C"` on that entry. `C` and `F` are the only explicit values; blank still means follow the system.
+- `omarchy.weather` is unchanged. Its own `unit` key still follows the system.
+- Rejected: cloning the plugin to hard-code Celsius (the stock setting already does this, and this pack does not vendor Elsewhen). Rejected: editing only `~/.config/omarchy/shell.json` (login sync would replace it with the pack).
+
 ## 2026-11-10 Pack wins over a drifted live file
 - Login sync is how the other machine becomes this pack. Exit 5 stopped that. On 2026-11-10 the live bar was still commit `2c27290` (Agents icon present). Sync memory was still commit `05ab998`. The pack was commit `c7eb181` (Agents icon gone). Three hashes, so sync called the file changed on both sides and applied nothing.
 - `sync.sh` now treats a differing live file the same as incoming drift. Local edit and both-changed both fall through to `./apply.sh`. Apply still backs up overwritten files under `~/.config/omarchy-dots-backup.<timestamp>/`. A wallpaper-only re-pin still skips apply, and it does not run when a packed file also differs.
